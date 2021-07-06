@@ -94,8 +94,7 @@ type Credential struct {
 
 	// mu protects everything below.
 	mu sync.Mutex
-	// Assertion is the JWT assertion if we have retrieved it. Public to allow faking in tests.
-	// Any use outside msal is not supported by a compatibility promise.
+	// Assertion is the signed JWT assertion if we have retrieved it or if it was passed.
 	Assertion string
 	// Expires is when the Assertion expires. Public to allow faking in tests.
 	// Any use outside msal is not supported by a compatibility promise.
@@ -267,6 +266,7 @@ func (c Client) FromAssertion(ctx context.Context, authParameters authority.Auth
 	qv.Set(grantType, grant.ClientCredential)
 	qv.Set("client_assertion_type", grant.ClientAssertion)
 	qv.Set("client_assertion", assertion)
+	qv.Set(clientID, authParameters.ClientID)
 	qv.Set(clientInfo, clientInfoVal)
 	addScopeQueryParam(qv, authParameters)
 
