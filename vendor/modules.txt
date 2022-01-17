@@ -2,7 +2,6 @@
 ## explicit
 github.com/Azure/azure-sdk-for-go
 github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac
-github.com/Azure/azure-sdk-for-go/services/subscription/mgmt/2020-09-01/subscription
 github.com/Azure/azure-sdk-for-go/version
 # github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.0
 ## explicit
@@ -26,9 +25,6 @@ github.com/Azure/azure-sdk-for-go/sdk/internal/diag
 github.com/Azure/azure-sdk-for-go/sdk/internal/errorinfo
 github.com/Azure/azure-sdk-for-go/sdk/internal/log
 github.com/Azure/azure-sdk-for-go/sdk/internal/uuid
-# github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v0.3.0
-## explicit
-github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources
 # github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v0.2.0
 ## explicit
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription
@@ -130,7 +126,7 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/spf13/viper v1.10.0
+# github.com/spf13/viper v1.10.1
 ## explicit
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
@@ -149,7 +145,7 @@ golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
+# golang.org/x/sys v0.0.0-20211210111614-af8b64212486
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows

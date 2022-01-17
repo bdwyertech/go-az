@@ -7,7 +7,6 @@ replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com
 require (
 	github.com/Azure/azure-sdk-for-go v61.2.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.0
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v0.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v0.2.0
 	github.com/Azure/go-autorest/autorest v0.11.24
 	github.com/Azure/go-autorest/autorest/adal v0.9.18
@@ -18,5 +17,5 @@ require (
 	github.com/orirawlings/persistent-cookiejar v0.3.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.3.0
-	github.com/spf13/viper v1.10.0
+	github.com/spf13/viper v1.10.1
 )
