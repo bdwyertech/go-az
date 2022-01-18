@@ -209,7 +209,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 	}
 	token = AccessToken{
 		AccessToken:  t.AccessToken,
-		ExpiresOn:    t.ExpiresOn.UTC().Format("2006-01-02 15:04:05.000000"),
+		ExpiresOn:    t.ExpiresOn.Format("2006-01-02 15:04:05.000000"),
 		Subscription: opts.SubscriptionID,
 		Tenant:       t.IDToken.TenantID,
 		TokenType:    "Bearer",
