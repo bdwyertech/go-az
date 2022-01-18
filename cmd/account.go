@@ -38,11 +38,13 @@ func init() {
 }
 
 var accountCmd = &cobra.Command{
-	Use: "account",
+	Use:   "account",
+	Short: "Manage Azure subscription information.",
 }
 
 var accountShowCmd = &cobra.Command{
-	Use: "show",
+	Use:   "show",
+	Short: "Get the details of a subscription.",
 	// List Current Subscription
 	Run: func(cmd *cobra.Command, args []string) {
 		// o := az.ListSubscriptions()
@@ -62,7 +64,8 @@ var accountShowCmd = &cobra.Command{
 }
 
 var accountListCmd = &cobra.Command{
-	Use: "list",
+	Use:   "list",
+	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
 	Run: func(cmd *cobra.Command, args []string) {
 		// o := az.ListSubscriptions()
@@ -76,7 +79,8 @@ var accountListCmd = &cobra.Command{
 }
 
 var accountGetAccessTokenCmd = &cobra.Command{
-	Use: "get-access-token",
+	Use:   "get-access-token",
+	Short: "Get a token for utilities to access Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
 		viper.BindPFlags(cmd.Flags())
 		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
@@ -96,7 +100,8 @@ var accountGetAccessTokenCmd = &cobra.Command{
 }
 
 var accountCachedCmd = &cobra.Command{
-	Use: "cached",
+	Use:   "cached",
+	Short: "List cached accounts.",
 	Run: func(cmd *cobra.Command, args []string) {
 		cached := az.GetCachedAccounts()
 		jsonBytes, err := json.MarshalIndent(cached, "", "  ")
@@ -106,11 +111,3 @@ var accountCachedCmd = &cobra.Command{
 		fmt.Println(string(jsonBytes))
 	},
 }
-
-// az account get-access-token
-
-// az account show
-//
-// az account show -s subscription-id
-//
-// az account list

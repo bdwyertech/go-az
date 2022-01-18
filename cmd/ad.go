@@ -23,11 +23,13 @@ func init() {
 }
 
 var adCmd = &cobra.Command{
-	Use: "ad",
+	Use:   "ad",
+	Short: "Manage Azure Active Directory Graph entities needed for Role Based Access Control.",
 }
 
 var adSignedInUserCmd = &cobra.Command{
 	Use:       "signed-in-user",
+	Short:     "Show graph information about current signed-in user in CLI.",
 	ValidArgs: []string{"show"},
 	Args:      cobra.ExactValidArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -39,6 +41,8 @@ var adSignedInUserCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			fmt.Println(string(jsonBytes))
+		default:
+			log.Fatalln("Unsupported argument:", args[0])
 		}
 	},
 }

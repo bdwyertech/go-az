@@ -2,12 +2,14 @@ module az
 
 go 1.16
 
-replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8
+// replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8
+
+// access-via-refresh
+replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259
 
 require (
 	github.com/Azure/azure-sdk-for-go v61.2.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.0
-	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v0.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v0.2.0
 	github.com/Azure/go-autorest/autorest v0.11.24
 	github.com/Azure/go-autorest/autorest/adal v0.9.18

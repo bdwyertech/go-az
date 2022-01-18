@@ -307,7 +307,6 @@ func (pca Client) AcquireTokenInteractive(ctx context.Context, scopes []string, 
 	authParams.CodeChallenge = challenge
 	authParams.CodeChallengeMethod = "S256"
 	authParams.State = uuid.New().String()
-	// authParams.HomeaccountID = ""
 	authParams.Prompt = "select_account"
 	res, err := pca.browserLogin(ctx, redirectURL, authParams)
 	if err != nil {

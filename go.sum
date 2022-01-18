@@ -55,8 +55,6 @@ github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.13.0 h1:bLRntPH25SkY1uZ/YZW+
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.13.0/go.mod h1:TmXReXZ9yPp5D5TBRMTAtyz+UyOl15Py4hL5E5p6igQ=
 github.com/Azure/azure-sdk-for-go/sdk/internal v0.8.3 h1:E+m3SkZCN0Bf5q7YdTs5lSm2CYY3CK4spn5OmUIiQtk=
 github.com/Azure/azure-sdk-for-go/sdk/internal v0.8.3/go.mod h1:KLF4gFr6DcKFZwSuH8w8yEK6DpFl3LP5rhdvAb7Yz5I=
-github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v0.3.0 h1:DRENE8RdmJnG9MmQKG4f7DbQwEGGjOpjCx2w3CsdkQw=
-github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources v0.3.0/go.mod h1:DMd3AeDGmMdpxqey6nSwWcKp3kwO9QMT/VY+XpsVHbE=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v0.2.0 h1:PTORjpd79Aql1Oim/iiqfBL9OJNVTLp3lgEGirZWeZc=
 github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v0.2.0/go.mod h1:rY7z/7dT8ByyvuUPvk0nyOq+5RadOSn0q2l+z5d3F6I=
 github.com/Azure/go-autorest v14.2.0+incompatible h1:V5VMDjClD3GiElqLWO7mz2MxNAK/vTfRHdAubSIPRgs=
@@ -93,8 +91,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-metrics v0.3.10/go.mod h1:4O98XIr/9W0sxpJ8UaYkvjk10Iff7SnFrb4QAOwNTFc=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8 h1:xcHrio4o70MT92/95kmI5IfXe7eWQfkFXrjqQJ1Ax6Y=
-github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8/go.mod h1:Vt9sXTKwMyGcOxSmLDMnGPgqsUg7m8pe215qMLrDXw4=
+github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259 h1:4Oqa51bBdZRXVKW9uWGndyvcldTpMJT7r7ObTwxHRcI=
+github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259/go.mod h1:Vt9sXTKwMyGcOxSmLDMnGPgqsUg7m8pe215qMLrDXw4=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=

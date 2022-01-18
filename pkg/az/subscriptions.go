@@ -21,8 +21,35 @@ func ListSubscriptionsCLI() []cli.Subscription {
 	return o.Subscriptions
 }
 
-func ListSubscriptions() (subscriptions []*armsubscription.Subscription) {
-	client := armsubscription.NewSubscriptionsClient(TokenCredential{}, nil)
+func ListSubscriptions() (subscriptions []*cli.Subscription) {
+	for _, t := range ListTenants() {
+		for _, s := range ListSubscriptionsForTenant(*t.TenantID) {
+			subscriptions = append(subscriptions, &cli.Subscription{
+				EnvironmentName: "AzureCloud",
+				ID:              *s.SubscriptionID,
+				IsDefault:       false,
+				Name:            *s.DisplayName,
+				State:           string(*s.State),
+				TenantID:        *t.TenantID,
+				User: &cli.User{
+					Name: UserForTenant(*t.TenantID),
+					Type: "user",
+				},
+			})
+		}
+	}
+	return
+}
+
+// func ListSubscriptions() (subscriptions []*armsubscription.Subscription) {
+// 	for _, t := range ListTenants() {
+// 		subscriptions = append(subscriptions, ListSubscriptionsForTenant(*t.TenantID)...)
+// 	}
+// 	return
+// }
+
+func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription.Subscription) {
+	client := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
 	pager := client.List(nil)
 	for {
 		subscriptions = append(subscriptions, pager.PageResponse().ListResult.Value...)
@@ -38,8 +65,8 @@ func ListSubscriptions() (subscriptions []*armsubscription.Subscription) {
 	return
 }
 
-func ListSubscriptionTenants() (tenants []*armsubscription.TenantIDDescription) {
-	client := armsubscription.NewTenantsClient(TokenCredential{}, nil)
+func ListTenants() (tenants []*armsubscription.TenantIDDescription) {
+	client := armsubscription.NewTenantsClient(new(TokenCredential), nil)
 	pager := client.List(nil)
 	for {
 		tenants = append(tenants, pager.PageResponse().Value...)
@@ -51,12 +78,6 @@ func ListSubscriptionTenants() (tenants []*armsubscription.TenantIDDescription) 
 		}
 		break
 	}
-	// o, err := json.MarshalIndent(tenants, "", "  ")
-	// if err != nil {
-	// 	log.Fatal()
-	// }
-	// fmt.Println(string(o))
-	// log.Fatal()
 
 	return
 }

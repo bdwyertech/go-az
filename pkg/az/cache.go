@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -63,6 +64,18 @@ type LocalCreds struct {
 		Username       string `json:"username"`
 		AuthorityType  string `json:"authority_type"`
 	} `json:"Account"`
+	AccessToken map[string]struct {
+		HomeAccountID     string `json:"home_account_id"`
+		Environment       string `json:"environment"`
+		Realm             string `json:"realm"`
+		CredentialType    string `json:"credential_type"`
+		ClientID          string `json:"client_id"`
+		Secret            string `json:"secret"`
+		Target            string `json:"target"`
+		ExpiresOn         string `json:"expires_on"`
+		ExtendedExpiresOn string `json:"extended_expires_on"`
+		CachedAt          string `json:"cached_at"`
+	} `json:"AccessToken"`
 	RefreshToken map[string]struct {
 		HomeAccountID  string `json:"home_account_id"`
 		Environment    string `json:"environment"`
@@ -71,16 +84,38 @@ type LocalCreds struct {
 		FamilyID       string `json:"family_id"`
 		Secret         string `json:"secret"`
 	} `json:"RefreshToken"`
+	IdToken map[string]struct {
+		HomeAccountID  string `json:"home_account_id"`
+		Environment    string `json:"environment"`
+		CredentialType string `json:"credential_type"`
+		ClientID       string `json:"client_id"`
+		Secret         string `json:"secret"`
+	} `json:"IdToken"`
 }
 
-func (l LocalCreds) First() (id string) {
+func (l LocalCreds) First() interface{} {
 	for _, c := range l.RefreshToken {
-		return c.HomeAccountID
+		return c
 	}
 	for _, c := range l.Account {
-		return c.HomeAccountID
+		return c
 	}
-	return
+	return nil
+}
+
+func (l LocalCreds) AssertionForUser(user string) string {
+	for _, a := range l.Account {
+		if strings.EqualFold(a.Username, user) {
+			for _, t := range l.IdToken {
+				if t.HomeAccountID == a.HomeAccountID {
+					log.Info("HIT!")
+					return t.Secret
+				}
+			}
+			return ""
+		}
+	}
+	return ""
 }
 
 func LoadLocalCreds() (creds LocalCreds) {
@@ -92,4 +127,17 @@ func LoadLocalCreds() (creds LocalCreds) {
 		log.Fatal(err)
 	}
 	return
+}
+
+func UserForTenant(tenant string) string {
+	var common string
+	for _, a := range LoadLocalCreds().Account {
+		switch a.Realm {
+		case tenant:
+			return a.Username
+		case "common", "organizations":
+			common = a.Username
+		}
+	}
+	return common
 }

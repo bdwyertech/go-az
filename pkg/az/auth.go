@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
+	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -26,6 +26,9 @@ type TokenCredential struct {
 
 // GetToken requests an access token for the specified set of scopes.
 func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenRequestOptions) (*azcore.AccessToken, error) {
+	if options.TenantID == "" && c.TenantID != "" {
+		options.TenantID = c.TenantID
+	}
 	token, err := GetToken(ctx, options)
 	if err != nil {
 		return nil, err
@@ -33,18 +36,14 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 
 	return &azcore.AccessToken{
 		Token:     token.AccessToken,
-		ExpiresOn: token.ExpiresOn,
+		ExpiresOn: token.ExpiresOn.UTC(),
 	}, nil
 }
 
 // GetToken requests an access token for the specified set of scopes.
 func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token public.AuthResult, err error) {
-	// localCreds := LoadLocalCreds()
-	// AZ-CLI:    login.microsoftonline.com/organizations/oauth2/v2.0/authorize
-	// pubClient: login.microsoftonline.com/common/oauth2/v2.0/authorize
-	// public.WithAuthority(organizationsAuthority)
 	jar, err := cookiejar.New(&cookiejar.Options{
-		Filename:              ".cookiejar",
+		Filename:              filepath.Join(filepath.Dir(cachePath()), "go_msal_cookie_cache.json"), // ".cookiejar",
 		PersistSessionCookies: true,
 	})
 	if err != nil {
@@ -52,7 +51,19 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 	}
 	defer jar.Save()
 
-	pubClient, err := public.New(AZ_CLIENT_ID, public.WithCache(credCache), public.WithHTTPClient(&http.Client{Jar: jar}))
+	// Authority
+	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
+	// Work & School Accounts - login.microsoftonline.com/organizations/
+	// Specific Org Accounts - login.microsoftonline.com/<tenant-id>/
+	if options.TenantID == "" {
+		options.TenantID = "organizations"
+	}
+
+	pubClientOpts := []public.Option{
+		public.WithCache(credCache),
+		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
+	}
+	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,18 +89,27 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 	}
 
 	opts := []public.AcquireTokenSilentOption{}
-	if options.TenantID != "" {
-		opts = append(opts, public.WithSilentAccount(public.Account{HomeAccountID: options.TenantID}))
-	} else if cachedAccounts := GetCachedAccounts(); len(cachedAccounts) > 0 {
-		opts = append(opts, public.WithSilentAccount(cachedAccounts[0]))
+	if cachedAccounts := pubClient.Accounts(); len(cachedAccounts) > 0 {
+		var selected *public.Account
+		for _, a := range cachedAccounts {
+			if a.Realm == options.TenantID {
+				selected = &a
+				break
+			}
+		}
+		if selected == nil {
+			selected = &cachedAccounts[0]
+		}
+		opts = append(opts, public.WithSilentAccount(*selected))
 	}
+
 	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
 	if err != nil {
 		if strings.Contains(err.Error(), "token_expired") {
 			// Token Expired
 			// http call(https://login.microsoftonline.com/organizations/oauth2/v2.0/token)(POST) error: reply status code was 400:
 			// {"error":"invalid_grant","error_description":"AADSTS70043: The refresh token has expired or is invalid due to sign-in frequency checks by conditional access. The token was issued on 2022-01-15T22:57:51.2550000Z and the maximum allowed lifetime for this request is 32400.\r\nTrace ID: 05c52010-d810-4d78-91ca-c1318ad4ca00\r\nCorrelation ID: 6d2db73d-1006-47bb-a55b-1adb26ccc06e\r\nTimestamp: 2022-01-16 19:11:53Z","error_codes":[70043],"timestamp":"2022-01-16 19:11:53Z","trace_id":"05c52010-d810-4d78-91ca-c1318ad4ca00","correlation_id":"6d2db73d-1006-47bb-a55b-1adb26ccc06e","suberror":"token_expired"}
-		} else if err.Error() != "access token not found" {
+		} else if err.Error() != "access token not found" && err.Error() != "not found" {
 			log.Fatal(err)
 		}
 		// AcquireTokenInteractive
@@ -99,12 +119,12 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 			log.Fatal(err)
 		}
 
-		redirectUrl := fmt.Sprintf("http://localhost:%v", port)
-		token, err = pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(redirectUrl))
+		token, err = pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+
 	return
 }
 
@@ -128,10 +148,9 @@ func GetAuthorizer(ctx context.Context, options policy.TokenRequestOptions) *aut
 		log.Fatal(err)
 	}
 	cliToken := cli.Token{
-		AccessToken:  token.AccessToken,
-		ExpiresOn:    token.ExpiresOn.Format("2006-01-02T15:04:05Z07:00"),
-		RefreshToken: token.RefreshToken,
-		TokenType:    "Bearer",
+		AccessToken: token.AccessToken,
+		ExpiresOn:   token.ExpiresOn.UTC().Format("2006-01-02T15:04:05Z07:00"),
+		TokenType:   "Bearer",
 		//	Authority        string `json:"_authority"`
 		//	ClientID         string `json:"_clientId"`
 		//	ExpiresOn        string `json:"expiresOn"`
@@ -190,7 +209,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 	}
 	token = AccessToken{
 		AccessToken:  t.AccessToken,
-		ExpiresOn:    t.ExpiresOn.Format("2006-01-02 15:04:05.000000"),
+		ExpiresOn:    t.ExpiresOn.UTC().Format("2006-01-02 15:04:05.000000"),
 		Subscription: opts.SubscriptionID,
 		Tenant:       t.IDToken.TenantID,
 		TokenType:    "Bearer",
