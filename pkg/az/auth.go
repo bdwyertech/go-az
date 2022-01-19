@@ -106,13 +106,11 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		}
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
-	silentCtx, silentCancel := context.WithCancel(ctx)
-	defer silentCancel()
-	token, err = pubClient.AcquireTokenSilent(silentCtx, options.Scopes, opts...)
+
+	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
 	if err != nil {
 		if strings.Contains(err.Error(), "token_expired") || // Token Expired
 			strings.Contains(err.Error(), "AADSTS50076") { // MFA Required
-			silentCancel()
 			//
 			// http call(https://login.microsoftonline.com/organizations/oauth2/v2.0/token)(POST) error: reply status code was 400:
 			// {"error":"invalid_grant","error_description":"AADSTS70043: The refresh token has expired or is invalid due to sign-in frequency checks by conditional access. The token was issued on 2022-01-15T22:57:51.2550000Z and the maximum allowed lifetime for this request is 32400.\r\nTrace ID: 05c52010-d810-4d78-91ca-c1318ad4ca00\r\nCorrelation ID: 6d2db73d-1006-47bb-a55b-1adb26ccc06e\r\nTimestamp: 2022-01-16 19:11:53Z","error_codes":[70043],"timestamp":"2022-01-16 19:11:53Z","trace_id":"05c52010-d810-4d78-91ca-c1318ad4ca00","correlation_id":"6d2db73d-1006-47bb-a55b-1adb26ccc06e","suberror":"token_expired"}
