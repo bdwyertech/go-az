@@ -66,6 +66,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		public.WithHTTPClient(&http.Client{Jar: jar}),
 		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
 	}
+
 	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)
 	if err != nil {
 		log.Fatal(err)
@@ -119,7 +120,9 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		} else if err.Error() != "access token not found" && err.Error() != "not found" {
 			log.Fatal(err)
 		}
+		//
 		// AcquireTokenInteractive
+		//
 		var port int
 		port, err = getFreePort()
 		if err != nil {
