@@ -2,6 +2,8 @@ package az
 
 import (
 	"context"
+	"errors"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 
@@ -10,12 +12,12 @@ import (
 )
 
 func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
-	if refresh {
-		BuildProfile()
-	}
 	p, err := cli.ProfilePath()
 	if err != nil {
 		log.Fatal(err)
+	}
+	if _, err = os.Stat(p); errors.Is(err, os.ErrNotExist) || refresh {
+		BuildProfile()
 	}
 	o, err := cli.LoadProfile(p)
 	if err != nil {
