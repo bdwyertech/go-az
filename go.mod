@@ -5,7 +5,7 @@ go 1.16
 // replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8
 
 // access-via-refresh
-replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259
+replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220119214522-7c10a8cb4b96
 
 require (
 	github.com/Azure/azure-sdk-for-go v61.2.0+incompatible

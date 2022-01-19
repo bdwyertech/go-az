@@ -52,7 +52,7 @@ github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 github.com/Azure/go-autorest/tracing
-# github.com/AzureAD/microsoft-authentication-library-for-go v0.4.0 => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259
+# github.com/AzureAD/microsoft-authentication-library-for-go v0.4.0 => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220119214522-7c10a8cb4b96
 ## explicit
 github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache
 github.com/AzureAD/microsoft-authentication-library-for-go/apps/errors
@@ -161,4 +161,4 @@ gopkg.in/ini.v1
 gopkg.in/retry.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
-# github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220118214827-235b37361259
+# github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220119214522-7c10a8cb4b96
