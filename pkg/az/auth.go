@@ -72,20 +72,6 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		log.Fatal(err)
 	}
 
-	//	options.Scopes
-	//	options.TenantID
-
-	//	scopes := []string{
-	//		// azure.PublicCloud.ServiceManagementEndpoint + ".default", // https://management.core.windows.net/.default
-	//		azure.PublicCloud.GraphEndpoint + ".default",
-	//		// azure.PublicCloud.ServiceManagementEndpoint + ".default+offline_access+openid+profile",
-	//		// azure.PublicCloud.ServiceManagementEndpoint + ".default+user_impersonation",
-	//		// azure.PublicCloud.ServiceManagementEndpoint + "user_impersonation", // https://management.core.windows.net/user_impersonation
-	//		// azure.PublicCloud.ServiceManagementEndpoint + "offline_access",     // https://management.core.windows.net/user_impersonation
-	//		// azure.PublicCloud.ResourceManagerEndpoint + ".default",   // https://management.azure.com/.default
-	//		// "offline_access", // Refresh Token
-	//		// AZ_CLIENT_ID + "/.default", // CLI Defaults
-	//	}
 	if len(options.Scopes) == 0 {
 		options.Scopes = []string{
 			azure.PublicCloud.ServiceManagementEndpoint + "/.default", // https://management.core.windows.net//.default
@@ -158,15 +144,6 @@ func GetAuthorizer(ctx context.Context, options policy.TokenRequestOptions) *aut
 		AccessToken: token.AccessToken,
 		ExpiresOn:   token.ExpiresOn.Format(time.RFC3339),
 		TokenType:   "Bearer",
-		//	Authority        string `json:"_authority"`
-		//	ClientID         string `json:"_clientId"`
-		//	ExpiresOn        string `json:"expiresOn"`
-		//	IdentityProvider string `json:"identityProvider"`
-		//	IsMRRT           bool   `json:"isMRRT"`
-		//	RefreshToken     string `json:"refreshToken"`
-		//	Resource         string `json:"resource"`
-		//	TokenType        string `json:"tokenType"`
-		//	UserID           string `json:"userId"`
 	}
 
 	adalToken, err := cliToken.ToADALToken()

@@ -46,13 +46,6 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 	return
 }
 
-// func ListSubscriptions() (subscriptions []*armsubscription.Subscription) {
-// 	for _, t := range ListTenants() {
-// 		subscriptions = append(subscriptions, ListSubscriptionsForTenant(*t.TenantID)...)
-// 	}
-// 	return
-// }
-
 func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription.Subscription) {
 	client := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
 	pager := client.List(nil)
