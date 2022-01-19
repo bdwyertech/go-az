@@ -6,6 +6,7 @@ import (
 	"net"
 	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -149,7 +150,7 @@ func GetAuthorizer(ctx context.Context, options policy.TokenRequestOptions) *aut
 	}
 	cliToken := cli.Token{
 		AccessToken: token.AccessToken,
-		ExpiresOn:   token.ExpiresOn.UTC().Format("2006-01-02T15:04:05Z07:00"),
+		ExpiresOn:   token.ExpiresOn.Format(time.RFC3339),
 		TokenType:   "Bearer",
 		//	Authority        string `json:"_authority"`
 		//	ClientID         string `json:"_clientId"`
