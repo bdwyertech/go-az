@@ -9,7 +9,10 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 )
 
-func ListSubscriptionsCLI() []cli.Subscription {
+func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
+	if refresh {
+		BuildProfile()
+	}
 	p, err := cli.ProfilePath()
 	if err != nil {
 		log.Fatal(err)
@@ -21,10 +24,10 @@ func ListSubscriptionsCLI() []cli.Subscription {
 	return o.Subscriptions
 }
 
-func ListSubscriptions() (subscriptions []*cli.Subscription) {
+func ListSubscriptions() (subscriptions []cli.Subscription) {
 	for _, t := range ListTenants() {
 		for _, s := range ListSubscriptionsForTenant(*t.TenantID) {
-			subscriptions = append(subscriptions, &cli.Subscription{
+			subscriptions = append(subscriptions, cli.Subscription{
 				EnvironmentName: "AzureCloud",
 				ID:              *s.SubscriptionID,
 				IsDefault:       false,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
@@ -44,7 +45,7 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 // GetToken requests an access token for the specified set of scopes.
 func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token public.AuthResult, err error) {
 	jar, err := cookiejar.New(&cookiejar.Options{
-		Filename:              filepath.Join(filepath.Dir(cachePath()), "go_msal_cookie_cache.json"), // ".cookiejar",
+		Filename:              filepath.Join(cacheDir(), "go_msal_cookie_cache.json"),
 		PersistSessionCookies: true,
 	})
 	if err != nil {
@@ -62,6 +63,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 
 	pubClientOpts := []public.Option{
 		public.WithCache(credCache),
+		public.WithHTTPClient(&http.Client{Jar: jar}),
 		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
 	}
 	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)

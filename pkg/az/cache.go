@@ -3,6 +3,7 @@ package az
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,21 +15,25 @@ import (
 
 var credCache Cache
 
-func cachePath() string {
+func cacheDir() (d string) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
+	d = filepath.Join(home, ".azure")
+	if _, err = os.Stat(d); errors.Is(err, os.ErrNotExist) {
+		os.Mkdir(d, 0750)
+	}
+	return
+}
 
-	return filepath.Join(home, ".azure", "go_msal_token_cache.json")
+func cachePath() string {
+	return filepath.Join(cacheDir(), "go_msal_token_cache.json")
 }
 
 type Cache struct{}
 
 func (c Cache) Export(m cache.Marshaler, k string) {
-	if k != "" {
-		log.Fatal(k)
-	}
 	cachePath := cachePath()
 	jsonBytes, err := m.Marshal()
 	if err != nil {
@@ -43,9 +48,6 @@ func (c Cache) Export(m cache.Marshaler, k string) {
 }
 
 func (c Cache) Replace(u cache.Unmarshaler, k string) {
-	if k != "" {
-		log.Fatal(k)
-	}
 	out, err := os.ReadFile(cachePath())
 	if err != nil {
 		return

@@ -28,6 +28,8 @@ func init() {
 	accountShowCmd.Flags().StringP("name", "n", "", "Name of subscription.")
 	accountShowCmd.Flags().StringP("subscription", "s", "", "ID of subscription.")
 
+	accountListCmd.Flags().BoolP("refresh", "", false, "ID of subscription.")
+
 	accountCmd.AddCommand(
 		accountCachedCmd,
 		accountGetAccessTokenCmd,
@@ -49,7 +51,7 @@ var accountShowCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// o := az.ListSubscriptions()
 		var defaultSub interface{}
-		for _, s := range az.ListSubscriptionsCLI() {
+		for _, s := range az.ListSubscriptionsCLI(false) {
 			if s.IsDefault {
 				defaultSub = s
 				break
@@ -68,9 +70,9 @@ var accountListCmd = &cobra.Command{
 	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
 	Run: func(cmd *cobra.Command, args []string) {
-		// o := az.ListSubscriptions()
-		o := az.ListSubscriptionsCLI()
-		jsonBytes, err := json.MarshalIndent(o, "", "  ")
+		viper.BindPFlags(cmd.Flags())
+		s := az.ListSubscriptionsCLI(viper.GetBool("refresh"))
+		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
 			log.Fatal(err)
 		}
