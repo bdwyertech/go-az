@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
-	cookiejar "github.com/orirawlings/persistent-cookiejar"
 )
 
 // TokenCredential represents a credential capable of providing an OAuth token.
@@ -44,15 +42,6 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 
 // GetToken requests an access token for the specified set of scopes.
 func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token public.AuthResult, err error) {
-	jar, err := cookiejar.New(&cookiejar.Options{
-		Filename:              filepath.Join(cacheDir(), "go_msal_cookie_cache.json"),
-		PersistSessionCookies: true,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer jar.Save()
-
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
@@ -61,9 +50,10 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		options.TenantID = "organizations"
 	}
 
+	t := http.DefaultTransport.(*http.Transport).Clone()
 	pubClientOpts := []public.Option{
 		public.WithCache(credCache),
-		public.WithHTTPClient(&http.Client{Jar: jar}),
+		public.WithHTTPClient(&http.Client{Transport: t}),
 		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
 	}
 
@@ -112,10 +102,15 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 			log.Fatal(err)
 		}
 
+		//
+		// Keepalives do not play nice with aggressive proxies here
+		//
+		t.DisableKeepAlives = true
 		token, err = pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
 		if err != nil {
 			log.Fatal(err)
 		}
+		t.DisableKeepAlives = false
 	}
 
 	return

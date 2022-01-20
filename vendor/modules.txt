@@ -105,9 +105,6 @@ github.com/magiconair/properties
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.4.3
 github.com/mitchellh/mapstructure
-# github.com/orirawlings/persistent-cookiejar v0.3.0
-## explicit
-github.com/orirawlings/persistent-cookiejar
 # github.com/pelletier/go-toml v1.9.4
 github.com/pelletier/go-toml
 # github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4
@@ -137,15 +134,12 @@ github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
-# go4.org v0.0.0-20190313082347-94abd6928b1d
-go4.org/lock
 # golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
 # golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
-golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.0.0-20211210111614-af8b64212486
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
@@ -157,8 +151,6 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # gopkg.in/ini.v1 v1.66.2
 gopkg.in/ini.v1
-# gopkg.in/retry.v1 v1.0.0-20161025181430-c09f6b86ba4d
-gopkg.in/retry.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220119214522-7c10a8cb4b96
