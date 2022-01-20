@@ -13,24 +13,3 @@ var (
 	// organizationsAuthority = microsoftAuthorityHost + "organizations"
 	// commonAuthority        = microsoftAuthorityHost + "common"
 )
-
-type Account struct {
-	CloudName        string                    `json:"cloudName"`
-	HomeTenantID     string                    `json:"homeTenantId"`
-	ID               string                    `json:"id"`
-	IsDefault        bool                      `json:"isDefault"`
-	ManagedByTenants []AccountManagedByTenants `json:"managedByTenants,omitempty"`
-	Name             string                    `json:"name"`
-	State            string                    `json:"state"`
-	TenantID         string                    `json:"tenantId"`
-	User             AccountUser               `json:"user"`
-}
-
-type AccountUser struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type AccountManagedByTenants []struct {
-	TenantID string `json:"tenantId"`
-}

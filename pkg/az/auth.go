@@ -157,20 +157,20 @@ func GetAuthorizer(ctx context.Context, options policy.TokenRequestOptions) *aut
 	return autorest.NewBearerAuthorizer(t)
 }
 
-type AccessTokenOptions struct {
-	SubscriptionID string
-	Resource       string
-	ResourceType   string
-	Scope          []string
-	Tenant         string
-}
-
 type AccessToken struct {
 	AccessToken  string `json:"accessToken"`
 	ExpiresOn    string `json:"expiresOn"`
 	Subscription string `json:"subscription,omitempty"`
 	Tenant       string `json:"tenant"`
 	TokenType    string `json:"tokenType"`
+}
+
+type AccessTokenOptions struct {
+	SubscriptionID string
+	Resource       string
+	ResourceType   string
+	Scope          []string
+	Tenant         string
 }
 
 func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {

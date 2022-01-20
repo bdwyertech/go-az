@@ -21,7 +21,6 @@ func init() {
 	accountGetAccessTokenCmd.Flags().StringP("name", "n", "", "Name of subscription.")
 	accountGetAccessTokenCmd.Flags().StringP("subscription", "s", "", "ID of subscription.")
 	accountGetAccessTokenCmd.Flags().StringP("resource", "", "", "Azure resource endpoints in AAD v1.0.")
-	accountGetAccessTokenCmd.Flags().StringP("resource-type", "", "", "Type of well-known resource.  Allowed values: aad-graph, arm, batch, data-lake, media, ms-graph, oss-rdbms.")
 	accountGetAccessTokenCmd.Flags().StringSliceP("scope", "", []string{}, "Space-separated AAD scopes in AAD v2.0. Default to Azure Resource Manager.")
 	accountGetAccessTokenCmd.Flags().StringP("tenant", "t", "", "Tenant ID for which the token is acquired. Only available for user and service principal account, not for MSI or Cloud Shell account.")
 
@@ -87,6 +86,7 @@ var accountGetAccessTokenCmd = &cobra.Command{
 		viper.BindPFlags(cmd.Flags())
 		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
 			Resource:       viper.GetString("resource"),
+			Scope:          viper.GetStringSlice("scope"),
 			SubscriptionID: viper.GetString("subscription"),
 			Tenant:         viper.GetString("tenant"),
 		})
