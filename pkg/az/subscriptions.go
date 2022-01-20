@@ -64,7 +64,7 @@ func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription
 }
 
 func ListTenants() (tenants []*armsubscription.TenantIDDescription) {
-	client := armsubscription.NewTenantsClient(new(TokenCredential), nil)
+	client := armsubscription.NewTenantsClient(TokenCredential{}, nil)
 	pager := client.List(nil)
 	for {
 		tenants = append(tenants, pager.PageResponse().Value...)
