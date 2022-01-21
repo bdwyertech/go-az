@@ -7,10 +7,11 @@
 package cmd
 
 import (
-	"az/pkg/az"
 	"encoding/json"
 	"fmt"
 	"log"
+
+	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
 )

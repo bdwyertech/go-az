@@ -6,7 +6,7 @@
 
 package main
 
-import "az/cmd"
+import "github.com/bdwyertech/go-az/cmd"
 
 func main() {
 	cmd.Execute()

@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringP("output", "o", "json", "Output format.  Allowed values: json, jsonc, none, table, tsv, yaml, yamlc.  Default: json.")
+	rootCmd.PersistentFlags().StringP("output", "o", "json", "Output format.  Allowed values: json  Default: json.")
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug logging")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 	cobra.OnInitialize(initConfig)

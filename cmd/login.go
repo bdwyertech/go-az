@@ -7,11 +7,12 @@
 package cmd
 
 import (
-	"az/pkg/az"
 	"encoding/json"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 

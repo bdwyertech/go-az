@@ -1,4 +1,4 @@
-module az
+module github.com/bdwyertech/go-az
 
 go 1.16
 
