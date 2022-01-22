@@ -24,9 +24,9 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
-      - -X main.GitCommit={{.ShortCommit}}
-      - -X main.ReleaseVer={{.Version}}
-      - -X main.ReleaseDate={{.Date}}
+      - -X github.com/bdwyertech/go-az/cmd.GitCommit={{.ShortCommit}}
+      - -X github.com/bdwyertech/go-az/cmd.ReleaseVer={{.Version}}
+      - -X github.com/bdwyertech/go-az/cmd.ReleaseDate={{.Date}}
 
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
