@@ -27,7 +27,7 @@ func BuildProfile() {
 		}
 	}
 	if p.InstallationID == "" {
-		p.InstallationID = uuid.New().String()
+		p.InstallationID = uuid.NewString()
 	}
 	p.Subscriptions = ListSubscriptions()
 
