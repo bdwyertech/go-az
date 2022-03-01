@@ -3,7 +3,7 @@
 github.com/Azure/azure-sdk-for-go
 github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac
 github.com/Azure/azure-sdk-for-go/version
-# github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.0
+# github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.1
 ## explicit
 github.com/Azure/azure-sdk-for-go/sdk/azcore
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm
