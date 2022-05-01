@@ -1,4 +1,4 @@
-# github.com/Azure/azure-sdk-for-go v61.2.0+incompatible
+# github.com/Azure/azure-sdk-for-go v63.4.0+incompatible
 ## explicit
 github.com/Azure/azure-sdk-for-go
 github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac
