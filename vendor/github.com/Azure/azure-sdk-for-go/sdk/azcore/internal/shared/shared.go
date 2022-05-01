@@ -1,5 +1,5 @@
-//go:build go1.16
-// +build go1.16
+//go:build go1.18
+// +build go1.18
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
@@ -7,24 +7,46 @@
 package shared
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"reflect"
 	"strconv"
-	"strings"
 	"time"
 )
+
+// TokenRequestOptions contain specific parameter that may be used by credentials types when attempting to get a token.
+type TokenRequestOptions struct {
+	// Scopes contains the list of permission scopes required for the token.
+	Scopes []string
+	// TenantID contains the tenant ID to use in a multi-tenant authentication scenario, if TenantID is set
+	// it will override the tenant ID that was added at credential creation time.
+	TenantID string
+}
+
+// TokenCredential represents a credential capable of providing an OAuth token.
+type TokenCredential interface {
+	// GetToken requests an access token for the specified set of scopes.
+	GetToken(ctx context.Context, options TokenRequestOptions) (*AccessToken, error)
+}
+
+// AccessToken represents an Azure service bearer access token with expiry information.
+type AccessToken struct {
+	Token     string
+	ExpiresOn time.Time
+}
 
 // CtxWithHTTPHeaderKey is used as a context key for adding/retrieving http.Header.
 type CtxWithHTTPHeaderKey struct{}
 
 // CtxWithRetryOptionsKey is used as a context key for adding/retrieving RetryOptions.
 type CtxWithRetryOptionsKey struct{}
+
+// CtxIncludeResponseKey is used as a context key for retrieving the raw response.
+type CtxIncludeResponseKey struct{}
 
 type nopCloser struct {
 	io.ReadSeeker
@@ -55,16 +77,13 @@ var ErrNoBody = errors.New("the response did not contain a body")
 // GetJSON reads the response body into a raw JSON object.
 // It returns ErrNoBody if there was no content.
 func GetJSON(resp *http.Response) (map[string]interface{}, error) {
-	body, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
+	body, err := Payload(resp)
 	if err != nil {
 		return nil, err
 	}
 	if len(body) == 0 {
 		return nil, ErrNoBody
 	}
-	// put the body back so it's available to others
-	resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 	// unmarshall the body to get the value
 	var jsonBody map[string]interface{}
 	if err = json.Unmarshal(body, &jsonBody); err != nil {
@@ -180,28 +199,9 @@ func (r *NopClosingBytesReader) Seek(offset int64, whence int) (int64, error) {
 	return i, nil
 }
 
-const defaultScope = "/.default"
-const chinaCloudARMScope = "https://management.core.chinacloudapi.cn/" + defaultScope
-const publicCloudARMScope = "https://management.core.windows.net/" + defaultScope
-const usGovCloudARMScope = "https://management.core.usgovcloudapi.net/" + defaultScope
-
-// EndpointToScope converts the provided URL endpoint to its default scope.
-func EndpointToScope(endpoint string) string {
-	parsed, err := url.Parse(endpoint)
-	if err == nil {
-		host := parsed.Hostname()
-		switch {
-		case strings.HasSuffix(host, "management.azure.com"):
-			return publicCloudARMScope
-		case strings.HasSuffix(host, "management.usgovcloudapi.net"):
-			return usGovCloudARMScope
-		case strings.HasSuffix(host, "management.chinacloudapi.cn"):
-			return chinaCloudARMScope
-		}
-	}
-	// fall back to legacy behavior when endpoint doesn't parse or match a known cloud's ARM endpoint
-	if endpoint[len(endpoint)-1] != '/' {
-		endpoint += "/"
-	}
-	return endpoint + defaultScope
+// TypeOfT returns the type of the generic type param.
+func TypeOfT[T any]() reflect.Type {
+	// you can't, at present, obtain the type of
+	// a type parameter, so this is the trick
+	return reflect.TypeOf((*T)(nil)).Elem()
 }
