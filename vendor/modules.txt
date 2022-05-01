@@ -3,7 +3,7 @@
 github.com/Azure/azure-sdk-for-go
 github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac
 github.com/Azure/azure-sdk-for-go/version
-# github.com/Azure/azure-sdk-for-go/sdk/azcore v0.21.0
+# github.com/Azure/azure-sdk-for-go/sdk/azcore v0.23.1
 ## explicit
 github.com/Azure/azure-sdk-for-go/sdk/azcore
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm
@@ -13,6 +13,7 @@ github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/internal/pollers/body
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/internal/pollers/loc
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/policy
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/runtime
+github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/pipeline
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/pollers
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/pollers/loc
@@ -20,7 +21,7 @@ github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/pollers/op
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/shared
 github.com/Azure/azure-sdk-for-go/sdk/azcore/policy
 github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime
-# github.com/Azure/azure-sdk-for-go/sdk/internal v0.8.3
+# github.com/Azure/azure-sdk-for-go/sdk/internal v0.9.1
 github.com/Azure/azure-sdk-for-go/sdk/internal/diag
 github.com/Azure/azure-sdk-for-go/sdk/internal/errorinfo
 github.com/Azure/azure-sdk-for-go/sdk/internal/log

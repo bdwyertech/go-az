@@ -1,5 +1,5 @@
-//go:build go1.16
-// +build go1.16
+//go:build go1.18
+// +build go1.18
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
@@ -106,6 +106,8 @@ func MarshalAsXML(req *policy.Request, v interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling type %T: %s", v, err)
 	}
+	// inclue the XML header as some services require it
+	b = []byte(xml.Header + string(b))
 	return req.SetBody(shared.NopCloser(bytes.NewReader(b)), shared.ContentTypeAppXML)
 }
 

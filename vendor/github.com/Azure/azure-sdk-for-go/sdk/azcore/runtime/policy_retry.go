@@ -1,5 +1,5 @@
-//go:build go1.16
-// +build go1.16
+//go:build go1.18
+// +build go1.18
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
@@ -173,6 +173,12 @@ func (p *retryPolicy) Do(req *policy.Request) (resp *http.Response, err error) {
 			return
 		}
 	}
+}
+
+// WithRetryOptions adds the specified RetryOptions to the parent context.
+// Use this to specify custom RetryOptions at the API-call level.
+func WithRetryOptions(parent context.Context, options policy.RetryOptions) context.Context {
+	return context.WithValue(parent, shared.CtxWithRetryOptionsKey{}, options)
 }
 
 // ********** The following type/methods implement the retryableRequestBody (a ReadSeekCloser)
