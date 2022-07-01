@@ -5,5 +5,6 @@
 // Use of this source code is governed by an MIT
 // license that can be found in the LICENSE file.
 
-// Package arm contains functionality specific to Azure Resource Manager clients.
-package arm
+// Package log contains functionality for configuring logging behavior.
+// Default logging to stderr can be enabled by setting environment variable AZURE_SDK_GO_LOGGING to "all".
+package log
