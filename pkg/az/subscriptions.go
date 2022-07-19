@@ -57,9 +57,7 @@ func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription
 		if err != nil {
 			log.Fatalln("failed to advance page:", err)
 		}
-		for _, v := range nextResult.Value {
-			subscriptions = append(subscriptions, v)
-		}
+		subscriptions = append(subscriptions, nextResult.Value...)
 	}
 	// TODO: Ensure we only return "enabled" subscriptions
 	return
