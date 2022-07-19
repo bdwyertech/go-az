@@ -154,6 +154,12 @@ func WithX5C(sendX5C bool) Option {
 	}
 }
 
+func WithRegionDetection(region string) Option {
+	return func(c *Client) {
+		c.AuthParams.AuthorityInfo.Region = region
+	}
+}
+
 // New is the constructor for Base.
 func New(clientID string, authorityURI string, token *oauth.Client, options ...Option) (Client, error) {
 	authInfo, err := authority.NewInfoFromAuthorityURI(authorityURI, true)
@@ -256,7 +262,7 @@ func (b Client) AcquireTokenSilent(ctx context.Context, silent AcquireTokenSilen
 	result, err := AuthResultFromStorage(storageTokenResponse)
 	if err != nil {
 		if reflect.ValueOf(storageTokenResponse.RefreshToken).IsZero() {
-			return AuthResult{}, errors.New("no refresh token found")
+			return AuthResult{}, errors.New("no token found")
 		}
 
 		var cc *accesstokens.Credential

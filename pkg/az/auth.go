@@ -25,16 +25,16 @@ type TokenCredential struct {
 }
 
 // GetToken requests an access token for the specified set of scopes.
-func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenRequestOptions) (*azcore.AccessToken, error) {
-	if options.TenantID == "" && c.TenantID != "" {
-		options.TenantID = c.TenantID
-	}
+func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	// if options.TenantID == "" && c.TenantID != "" {
+	// 	options.TenantID = c.TenantID
+	// }
 	token, err := GetToken(ctx, options)
 	if err != nil {
-		return nil, err
+		return azcore.AccessToken{}, err
 	}
 
-	return &azcore.AccessToken{
+	return azcore.AccessToken{
 		Token:     token.AccessToken,
 		ExpiresOn: token.ExpiresOn.UTC(),
 	}, nil
@@ -46,15 +46,17 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
 	// Specific Org Accounts - login.microsoftonline.com/<tenant-id>/
-	if options.TenantID == "" {
-		options.TenantID = "organizations"
-	}
+	// if options.TenantID == "" {
+	// 	options.TenantID = "organizations"
+	// }
+
+	tenant := "organizations"
 
 	t := http.DefaultTransport.(*http.Transport).Clone()
 	pubClientOpts := []public.Option{
 		public.WithCache(credCache),
 		public.WithHTTPClient(&http.Client{Transport: t}),
-		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
+		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", tenant)),
 	}
 
 	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)
@@ -72,7 +74,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 	if cachedAccounts := pubClient.Accounts(); len(cachedAccounts) > 0 {
 		var selected *public.Account
 		for _, a := range cachedAccounts {
-			if a.Realm == options.TenantID {
+			if a.Realm == tenant {
 				selected = &a
 				break
 			}
@@ -85,12 +87,12 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 
 	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
 	if err != nil {
-		if strings.Contains(err.Error(), "token_expired") || // Token Expired
+		if strings.Contains(err.Error(), "AADSTS700082") || strings.Contains(err.Error(), "token_expired") || // Token Expired
 			strings.Contains(err.Error(), "AADSTS50076") { // MFA Required
 			//
 			// http call(https://login.microsoftonline.com/organizations/oauth2/v2.0/token)(POST) error: reply status code was 400:
 			// {"error":"invalid_grant","error_description":"AADSTS70043: The refresh token has expired or is invalid due to sign-in frequency checks by conditional access. The token was issued on 2022-01-15T22:57:51.2550000Z and the maximum allowed lifetime for this request is 32400.\r\nTrace ID: 05c52010-d810-4d78-91ca-c1318ad4ca00\r\nCorrelation ID: 6d2db73d-1006-47bb-a55b-1adb26ccc06e\r\nTimestamp: 2022-01-16 19:11:53Z","error_codes":[70043],"timestamp":"2022-01-16 19:11:53Z","trace_id":"05c52010-d810-4d78-91ca-c1318ad4ca00","correlation_id":"6d2db73d-1006-47bb-a55b-1adb26ccc06e","suberror":"token_expired"}
-		} else if err.Error() != "access token not found" && err.Error() != "not found" {
+		} else if err.Error() != "access token not found" && err.Error() != "no token found" && err.Error() != "not found" {
 			log.Fatal(err)
 		}
 		//
@@ -175,8 +177,8 @@ type AccessTokenOptions struct {
 
 func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {
 	popts := policy.TokenRequestOptions{
-		Scopes:   opts.Scope,
-		TenantID: opts.Tenant,
+		Scopes: opts.Scope,
+		// TenantID: opts.Tenant,
 	}
 	if opts.Resource != "" {
 		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")

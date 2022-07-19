@@ -1,5 +1,5 @@
-//go:build go1.16
-// +build go1.16
+//go:build go1.18
+// +build go1.18
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	armruntime "github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/runtime"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"net/http"
@@ -31,47 +32,47 @@ type AliasClient struct {
 // NewAliasClient creates a new instance of AliasClient with the specified values.
 // credential - used to authorize requests. Usually a credential from azidentity.
 // options - pass nil to accept the default values.
-func NewAliasClient(credential azcore.TokenCredential, options *arm.ClientOptions) *AliasClient {
-	cp := arm.ClientOptions{}
-	if options != nil {
-		cp = *options
+func NewAliasClient(credential azcore.TokenCredential, options *arm.ClientOptions) (*AliasClient, error) {
+	if options == nil {
+		options = &arm.ClientOptions{}
 	}
-	if len(cp.Endpoint) == 0 {
-		cp.Endpoint = arm.AzurePublicCloud
+	ep := cloud.AzurePublic.Services[cloud.ResourceManager].Endpoint
+	if c, ok := options.Cloud.Services[cloud.ResourceManager]; ok {
+		ep = c.Endpoint
+	}
+	pl, err := armruntime.NewPipeline(moduleName, moduleVersion, credential, runtime.PipelineOptions{}, options)
+	if err != nil {
+		return nil, err
 	}
 	client := &AliasClient{
-		host: string(cp.Endpoint),
-		pl:   armruntime.NewPipeline(moduleName, moduleVersion, credential, runtime.PipelineOptions{}, &cp),
+		host: ep,
+		pl:   pl,
 	}
-	return client
+	return client, nil
 }
 
 // BeginCreate - Create Alias Subscription.
 // If the operation fails it returns an *azcore.ResponseError type.
+// Generated from API version 2021-10-01
 // aliasName - AliasName is the name for the subscription creation request. Note that this is not the same as subscription
 // name and this doesn’t have any other lifecycle need beyond the request for subscription
 // creation.
 // options - AliasClientBeginCreateOptions contains the optional parameters for the AliasClient.BeginCreate method.
-func (client *AliasClient) BeginCreate(ctx context.Context, aliasName string, body PutAliasRequest, options *AliasClientBeginCreateOptions) (AliasClientCreatePollerResponse, error) {
-	resp, err := client.create(ctx, aliasName, body, options)
-	if err != nil {
-		return AliasClientCreatePollerResponse{}, err
+func (client *AliasClient) BeginCreate(ctx context.Context, aliasName string, body PutAliasRequest, options *AliasClientBeginCreateOptions) (*runtime.Poller[AliasClientCreateResponse], error) {
+	if options == nil || options.ResumeToken == "" {
+		resp, err := client.create(ctx, aliasName, body, options)
+		if err != nil {
+			return nil, err
+		}
+		return runtime.NewPoller[AliasClientCreateResponse](resp, client.pl, nil)
+	} else {
+		return runtime.NewPollerFromResumeToken[AliasClientCreateResponse](options.ResumeToken, client.pl, nil)
 	}
-	result := AliasClientCreatePollerResponse{
-		RawResponse: resp,
-	}
-	pt, err := armruntime.NewPoller("AliasClient.Create", "", resp, client.pl)
-	if err != nil {
-		return AliasClientCreatePollerResponse{}, err
-	}
-	result.Poller = &AliasClientCreatePoller{
-		pt: pt,
-	}
-	return result, nil
 }
 
 // Create - Create Alias Subscription.
 // If the operation fails it returns an *azcore.ResponseError type.
+// Generated from API version 2021-10-01
 func (client *AliasClient) create(ctx context.Context, aliasName string, body PutAliasRequest, options *AliasClientBeginCreateOptions) (*http.Response, error) {
 	req, err := client.createCreateRequest(ctx, aliasName, body, options)
 	if err != nil {
@@ -101,12 +102,13 @@ func (client *AliasClient) createCreateRequest(ctx context.Context, aliasName st
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2021-10-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
-	req.Raw().Header.Set("Accept", "application/json")
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, runtime.MarshalAsJSON(req, body)
 }
 
 // Delete - Delete Alias.
 // If the operation fails it returns an *azcore.ResponseError type.
+// Generated from API version 2021-10-01
 // aliasName - AliasName is the name for the subscription creation request. Note that this is not the same as subscription
 // name and this doesn’t have any other lifecycle need beyond the request for subscription
 // creation.
@@ -123,7 +125,7 @@ func (client *AliasClient) Delete(ctx context.Context, aliasName string, options
 	if !runtime.HasStatusCode(resp, http.StatusOK, http.StatusNoContent) {
 		return AliasClientDeleteResponse{}, runtime.NewResponseError(resp)
 	}
-	return AliasClientDeleteResponse{RawResponse: resp}, nil
+	return AliasClientDeleteResponse{}, nil
 }
 
 // deleteCreateRequest creates the Delete request.
@@ -140,12 +142,13 @@ func (client *AliasClient) deleteCreateRequest(ctx context.Context, aliasName st
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2021-10-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
-	req.Raw().Header.Set("Accept", "application/json")
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
 }
 
 // Get - Get Alias Subscription.
 // If the operation fails it returns an *azcore.ResponseError type.
+// Generated from API version 2021-10-01
 // aliasName - AliasName is the name for the subscription creation request. Note that this is not the same as subscription
 // name and this doesn’t have any other lifecycle need beyond the request for subscription
 // creation.
@@ -179,13 +182,13 @@ func (client *AliasClient) getCreateRequest(ctx context.Context, aliasName strin
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2021-10-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
-	req.Raw().Header.Set("Accept", "application/json")
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
 }
 
 // getHandleResponse handles the Get response.
 func (client *AliasClient) getHandleResponse(resp *http.Response) (AliasClientGetResponse, error) {
-	result := AliasClientGetResponse{RawResponse: resp}
+	result := AliasClientGetResponse{}
 	if err := runtime.UnmarshalAsJSON(resp, &result.AliasResponse); err != nil {
 		return AliasClientGetResponse{}, err
 	}
@@ -194,6 +197,7 @@ func (client *AliasClient) getHandleResponse(resp *http.Response) (AliasClientGe
 
 // List - List Alias Subscription.
 // If the operation fails it returns an *azcore.ResponseError type.
+// Generated from API version 2021-10-01
 // options - AliasClientListOptions contains the optional parameters for the AliasClient.List method.
 func (client *AliasClient) List(ctx context.Context, options *AliasClientListOptions) (AliasClientListResponse, error) {
 	req, err := client.listCreateRequest(ctx, options)
@@ -220,13 +224,13 @@ func (client *AliasClient) listCreateRequest(ctx context.Context, options *Alias
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2021-10-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
-	req.Raw().Header.Set("Accept", "application/json")
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
 }
 
 // listHandleResponse handles the List response.
 func (client *AliasClient) listHandleResponse(resp *http.Response) (AliasClientListResponse, error) {
-	result := AliasClientListResponse{RawResponse: resp}
+	result := AliasClientListResponse{}
 	if err := runtime.UnmarshalAsJSON(resp, &result.AliasListResult); err != nil {
 		return AliasClientListResponse{}, err
 	}

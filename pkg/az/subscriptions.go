@@ -47,34 +47,36 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 }
 
 func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription.Subscription) {
-	client := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
-	pager := client.List(nil)
-	for {
-		subscriptions = append(subscriptions, pager.PageResponse().ListResult.Value...)
-		if pager.NextPage(context.Background()) {
-			continue
-		}
-		if err := pager.Err(); err != nil {
-			log.Fatalf("failed to advance page: %v", err)
-		}
-		break
+	client, err := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
+	if err != nil {
+		log.Fatal(err)
 	}
-
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		nextResult, err := pager.NextPage(context.Background())
+		if err != nil {
+			log.Fatalln("failed to advance page:", err)
+		}
+		for _, v := range nextResult.Value {
+			subscriptions = append(subscriptions, v)
+		}
+	}
+	// TODO: Ensure we only return "enabled" subscriptions
 	return
 }
 
 func ListTenants() (tenants []*armsubscription.TenantIDDescription) {
-	client := armsubscription.NewTenantsClient(TokenCredential{}, nil)
-	pager := client.List(nil)
-	for {
-		tenants = append(tenants, pager.PageResponse().Value...)
-		if pager.NextPage(context.Background()) {
-			continue
+	client, err := armsubscription.NewTenantsClient(TokenCredential{}, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pager := client.NewListPager(nil)
+	for pager.More() {
+		resp, err := pager.NextPage(context.Background())
+		if err != nil {
+			log.Fatalln("failed to advance page:", err)
 		}
-		if err := pager.Err(); err != nil {
-			log.Fatalf("failed to advance page: %v", err)
-		}
-		break
+		tenants = append(tenants, resp.Value...)
 	}
 
 	return

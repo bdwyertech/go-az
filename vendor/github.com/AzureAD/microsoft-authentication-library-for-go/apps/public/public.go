@@ -312,16 +312,19 @@ func (pca Client) AcquireTokenInteractive(ctx context.Context, scopes []string, 
 	if err != nil {
 		return AuthResult{}, err
 	}
+	authParams.Redirecturi = res.redirectURI
 
-	params := base.AcquireTokenAuthCodeParameters{
-		AppType:     accesstokens.ATPublic,
-		Challenge:   cv,
-		Code:        res.authCode,
-		RedirectURI: res.redirectURI,
-		Scopes:      scopes,
+	req, err := accesstokens.NewCodeChallengeRequest(authParams, accesstokens.ATPublic, nil, res.authCode, cv)
+	if err != nil {
+		return AuthResult{}, err
 	}
 
-	return pca.base.AcquireTokenByAuthCode(ctx, params)
+	token, err := pca.base.Token.AuthCode(ctx, req)
+	if err != nil {
+		return AuthResult{}, err
+	}
+
+	return pca.base.AuthResultFromToken(ctx, authParams, token, true)
 }
 
 type interactiveAuthResult struct {
@@ -359,6 +362,7 @@ func (pca Client) browserLogin(ctx context.Context, redirectURI *url.URL, params
 		return interactiveAuthResult{}, err
 	}
 	defer srv.Shutdown()
+	params.Scopes = accesstokens.AppendDefaultScopes(params)
 	authURL, err := pca.base.AuthCodeURL(ctx, params.ClientID, srv.Addr, params.Scopes, params)
 	if err != nil {
 		return interactiveAuthResult{}, err

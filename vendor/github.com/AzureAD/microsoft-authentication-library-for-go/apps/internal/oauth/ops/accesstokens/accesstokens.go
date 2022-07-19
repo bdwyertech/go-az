@@ -43,6 +43,9 @@ const (
 	password      = "password"
 )
 
+// assertionLifetime allows tests to control the expiration time of JWT assertions created by Credential.
+var assertionLifetime = 10 * time.Minute
+
 //go:generate stringer -type=AppType
 
 // AppType is whether the authorization code flow is for a public or confidential client.
@@ -106,14 +109,18 @@ func (c *Credential) JWT(authParams authority.AuthParams) (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.Expires.Before(time.Now()) && c.Assertion != "" {
+	if c.Expires.After(time.Now()) {
+		return c.Assertion, nil
+	} else if c.Cert == nil || c.Key == nil {
+		// The assertion has expired and this Credential can't generate a new one. The assertion
+		// was presumably provided by the application via confidential.NewCredFromAssertion(). We
+		// return it despite its expiration to maintain the behavior of previous versions, and
+		// because there's no API enabling the application to replace the assertion
+		// (see https://github.com/AzureAD/microsoft-authentication-library-for-go/issues/292).
 		return c.Assertion, nil
 	}
-	// There is no hard requirement on what the expiry time should be.
-	// https://tools.ietf.org/html/rfc7519#section-4.1.4
-	// This just sets a default of 10 mins which means a cached JWT assertion
-	// can be used if it is less that 10 mins old after which we regenerate the assertion.
-	expires := time.Now().Add(10 * time.Minute)
+
+	expires := time.Now().Add(assertionLifetime)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"aud": authParams.Endpoints.TokenEndpoint,
@@ -394,7 +401,7 @@ var detectDefaultScopes = map[string]bool{
 
 var defaultScopes = []string{"openid", "offline_access", "profile"}
 
-func addScopeQueryParam(queryParams url.Values, authParameters authority.AuthParams) {
+func AppendDefaultScopes(authParameters authority.AuthParams) []string {
 	scopes := make([]string, 0, len(authParameters.Scopes)+len(defaultScopes))
 	for _, scope := range authParameters.Scopes {
 		s := strings.TrimSpace(scope)
@@ -407,6 +414,10 @@ func addScopeQueryParam(queryParams url.Values, authParameters authority.AuthPar
 		scopes = append(scopes, scope)
 	}
 	scopes = append(scopes, defaultScopes...)
+	return scopes
+}
 
+func addScopeQueryParam(queryParams url.Values, authParameters authority.AuthParams) {
+	scopes := AppendDefaultScopes(authParameters)
 	queryParams.Set("scope", strings.Join(scopes, " "))
 }

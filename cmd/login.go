@@ -14,8 +14,6 @@ import (
 
 	"github.com/bdwyertech/go-az/pkg/az"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -38,13 +36,14 @@ var loginCmd = &cobra.Command{
 	Short: "Log in to Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
 		viper.BindPFlags(cmd.Flags())
-		opts := policy.TokenRequestOptions{
-			TenantID: viper.GetString("tenant"),
+		opts := az.AccessTokenOptions{
+			Tenant: viper.GetString("tenant"),
 		}
 		if scope := viper.GetString("scope"); scope != "" {
-			opts.Scopes = append(opts.Scopes, scope)
+			opts.Scope = append(opts.Scope, scope)
 		}
-		_, err := az.GetToken(cmd.Context(), opts)
+
+		_, err := az.GetAccessToken(cmd.Context(), opts)
 		if err != nil {
 			log.Fatal(err)
 		}
