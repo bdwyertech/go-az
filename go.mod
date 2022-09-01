@@ -9,7 +9,7 @@ go 1.18
 
 require (
 	github.com/Azure/azure-sdk-for-go v66.0.0+incompatible
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.1
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.2
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription v1.0.0
 	github.com/Azure/go-autorest/autorest v0.11.27
 	github.com/Azure/go-autorest/autorest/adal v0.9.20
