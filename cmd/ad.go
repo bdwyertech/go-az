@@ -9,7 +9,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/bdwyertech/go-az/pkg/az"
 

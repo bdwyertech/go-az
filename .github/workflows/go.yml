@@ -5,7 +5,7 @@ jobs:
     name: Build
     strategy:
       matrix:
-        go: [1.18]
+        go: [1.19]
     runs-on: ubuntu-latest
     container: golang:${{ matrix.go }}
     steps:
@@ -24,15 +24,17 @@ jobs:
       - name: Test
         env:
           GOFLAGS: '-mod=vendor'
+          STATICCHECK_VERSION: 'v0.3.3'
         run: |
-          GO111MODULE=off go get honnef.co/go/tools/cmd/staticcheck
+          wget -qO- https://github.com/dominikh/go-tools/releases/download/${STATICCHECK_VERSION}/staticcheck_linux_amd64.tar.gz | tar zxf - --directory /usr/local/bin --strip-components=1 staticcheck/staticcheck
           go fmt $(go list ./... | grep -v /vendor/) | xargs -I {} -r /bin/sh -c "/bin/echo {} && exit 1"
           go vet $(go list ./... | grep -v /vendor/)
+          staticcheck --version
           staticcheck $(go list ./... | grep -v /vendor/)
           go test -v -race $(go list ./... | grep -v /vendor/)
 
       - name: Run GoReleaser
-        if: startsWith(github.ref, 'refs/tags/') && (matrix.go == 1.18)
+        if: startsWith(github.ref, 'refs/tags/') && (matrix.go == 1.19)
         uses: goreleaser/goreleaser-action@v3
         with:
           version: latest
