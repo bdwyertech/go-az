@@ -61,8 +61,7 @@ func LoadProfile() (p cli.Profile, err error) {
 	if err != nil {
 		return
 	}
-	p, err = cli.LoadProfile(f)
-	return
+	return cli.LoadProfile(f)
 }
 
 func DefaultSubscription() (id string) {
