@@ -32,6 +32,9 @@ func Execute() {
 var rootCmd = &cobra.Command{
 	Use:    "az",
 	Hidden: true,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		viper.BindPFlags(cmd.Flags())
+	},
 }
 
 func initConfig() {

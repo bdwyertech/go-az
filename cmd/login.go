@@ -35,7 +35,6 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
-		viper.BindPFlags(cmd.Flags())
 		opts := az.AccessTokenOptions{
 			Tenant: viper.GetString("tenant"),
 		}

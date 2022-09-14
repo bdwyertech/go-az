@@ -18,9 +18,7 @@ import (
 )
 
 func init() {
-	adCmd.AddCommand(
-		adSignedInUserCmd,
-	)
+	adCmd.AddCommand(adSignedInUserCmd)
 	rootCmd.AddCommand(adCmd)
 }
 

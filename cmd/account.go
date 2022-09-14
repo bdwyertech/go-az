@@ -28,7 +28,7 @@ func init() {
 	accountShowCmd.Flags().StringP("name", "n", "", "Name of subscription.")
 	accountShowCmd.Flags().StringP("subscription", "s", "", "ID of subscription.")
 
-	accountListCmd.Flags().BoolP("refresh", "", false, "ID of subscription.")
+	accountListCmd.Flags().BoolP("refresh", "", false, "Refresh list of available subscriptions")
 
 	accountCmd.AddCommand(
 		accountCachedCmd,
@@ -70,7 +70,6 @@ var accountListCmd = &cobra.Command{
 	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
 	Run: func(cmd *cobra.Command, args []string) {
-		viper.BindPFlags(cmd.Flags())
 		s := az.ListSubscriptionsCLI(viper.GetBool("refresh"))
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
@@ -84,7 +83,6 @@ var accountGetAccessTokenCmd = &cobra.Command{
 	Use:   "get-access-token",
 	Short: "Get a token for utilities to access Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
-		viper.BindPFlags(cmd.Flags())
 		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
 			Resource:       viper.GetString("resource"),
 			Scope:          viper.GetStringSlice("scope"),
