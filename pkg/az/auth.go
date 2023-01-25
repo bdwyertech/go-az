@@ -70,7 +70,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		}
 	}
 
-	opts := []public.AcquireTokenSilentOption{}
+	opts := []public.AcquireSilentOption{}
 	if cachedAccounts := pubClient.Accounts(); len(cachedAccounts) > 0 {
 		var selected *public.Account
 		for _, a := range cachedAccounts {
