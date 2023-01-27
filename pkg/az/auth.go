@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
+	"github.com/gofrs/flock"
+	"github.com/mitchellh/go-homedir"
 )
 
 // TokenCredential represents a credential capable of providing an OAuth token.
@@ -29,7 +32,7 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	// if options.TenantID == "" && c.TenantID != "" {
 	// 	options.TenantID = c.TenantID
 	// }
-	token, err := GetToken(ctx, options)
+	token, err := GetToken(ctx, TokenOptions{options, c.TenantID})
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
@@ -40,28 +43,31 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	}, nil
 }
 
+type TokenOptions struct {
+	policy.TokenRequestOptions
+	TenantID string
+}
+
 // GetToken requests an access token for the specified set of scopes.
-func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token public.AuthResult, err error) {
+func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
 	// Specific Org Accounts - login.microsoftonline.com/<tenant-id>/
-	// if options.TenantID == "" {
-	// 	options.TenantID = "organizations"
-	// }
-
-	tenant := "organizations"
+	if options.TenantID == "" {
+		options.TenantID = "organizations"
+	}
 
 	t := http.DefaultTransport.(*http.Transport).Clone()
 	pubClientOpts := []public.Option{
 		public.WithCache(credCache),
 		public.WithHTTPClient(&http.Client{Transport: t}),
-		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", tenant)),
+		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
 	}
 
 	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	if len(options.Scopes) == 0 {
@@ -74,7 +80,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 	if cachedAccounts := pubClient.Accounts(); len(cachedAccounts) > 0 {
 		var selected *public.Account
 		for _, a := range cachedAccounts {
-			if a.Realm == tenant {
+			if a.Realm == options.TenantID {
 				selected = &a
 				break
 			}
@@ -85,10 +91,24 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
 
+	// Terraform might call out concurrently -- ensure we only have one interactive prompt at any given time
+	home, err := homedir.Dir()
+	if err != nil {
+		return
+	}
+
+	f := flock.New(filepath.Join(home, ".azure", ".go-az.lock"))
+	if _, err = f.TryLockContext(context.TODO(), 5*time.Second); err != nil {
+		return
+	}
+	defer f.Unlock()
+
 	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
 	if err != nil {
 		if strings.Contains(err.Error(), "AADSTS700082") || strings.Contains(err.Error(), "token_expired") || // Token Expired
 			strings.Contains(err.Error(), "AADSTS50076") || // MFA Required
+			strings.Contains(err.Error(), "AADSTS50079") || // MFA Enrollment Required
+			// AADSTS50079: Due to a configuration change made by your administrator, or because you moved to a new location, you must enroll in multi-factor authentication
 			strings.Contains(err.Error(), "AADSTS50173") || // Expired Grant
 			strings.Contains(err.Error(), "AADSTS70043") { // Refresh Token Expired
 			//
@@ -100,7 +120,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 			case "no token found", "access token not found", "not found":
 			default:
 				log.Debug(err.Error())
-				log.Fatal(err)
+				return
 			}
 		}
 
@@ -110,7 +130,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		var port int
 		port, err = getFreePort()
 		if err != nil {
-			log.Fatal(err)
+			return
 		}
 
 		//
@@ -119,7 +139,7 @@ func GetToken(ctx context.Context, options policy.TokenRequestOptions) (token pu
 		t.DisableKeepAlives = true
 		token, err = pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
 		if err != nil {
-			log.Fatal(err)
+			return
 		}
 		t.DisableKeepAlives = false
 	}
@@ -141,7 +161,7 @@ func getFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func GetAuthorizer(ctx context.Context, options policy.TokenRequestOptions) *autorest.BearerAuthorizer {
+func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAuthorizer {
 	token, err := GetToken(ctx, options)
 	if err != nil {
 		log.Fatal(err)
@@ -193,7 +213,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
 	}
 
-	t, err := GetToken(ctx, popts)
+	t, err := GetToken(ctx, TokenOptions{popts, opts.Tenant})
 	if err != nil {
 		return
 	}

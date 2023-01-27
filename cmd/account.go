@@ -9,6 +9,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -49,15 +50,32 @@ var accountShowCmd = &cobra.Command{
 	Short: "Get the details of a subscription.",
 	// List Current Subscription
 	Run: func(cmd *cobra.Command, args []string) {
-		// o := az.ListSubscriptions()
-		var defaultSub interface{}
-		for _, s := range az.ListSubscriptionsCLI(false) {
-			if s.IsDefault {
-				defaultSub = s
-				break
+		var sub interface{}
+		subName, subId := viper.GetString("name"), viper.GetString("subscription")
+		if subName != "" || subId != "" {
+			for _, s := range az.ListSubscriptionsCLI(false) {
+				if subId != "" && strings.EqualFold(subId, s.ID) {
+					sub = s
+					break
+				}
+				if subName != "" && strings.EqualFold(subName, s.Name) {
+					sub = s
+					break
+				}
+			}
+			if sub == nil {
+				log.Fatal("Unable to find matching subscription!")
+			}
+		} else {
+			for _, s := range az.ListSubscriptionsCLI(false) {
+				if s.IsDefault {
+					sub = s
+					break
+				}
 			}
 		}
-		jsonBytes, err := json.MarshalIndent(defaultSub, "", "  ")
+
+		jsonBytes, err := json.MarshalIndent(sub, "", "  ")
 		if err != nil {
 			log.Fatal(err)
 		}

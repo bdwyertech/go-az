@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/google/uuid"
 )
 
-func BuildProfile() {
+func BuildProfile() error {
 	f, err := cli.ProfilePath()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var p cli.Profile
 	// Try to get the default
@@ -42,7 +40,7 @@ func BuildProfile() {
 		p.Subscriptions[0].IsDefault = true
 	}
 
-	WriteProfile(p, f)
+	return WriteProfile(p, f)
 }
 
 func WriteProfile(profile cli.Profile, path string) (err error) {

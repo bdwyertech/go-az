@@ -35,7 +35,7 @@ var adSignedInUserCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "show":
-			u := az.GetSignedInUser("")
+			u := az.GetSignedInUser(cmd.Context(), "")
 			jsonBytes, err := json.MarshalIndent(u, "", "  ")
 			if err != nil {
 				log.Fatal(err)

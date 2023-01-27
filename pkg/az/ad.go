@@ -10,13 +10,13 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-func GetSignedInUser(tenant string) graphrbac.User {
+func GetSignedInUser(ctx context.Context, tenant string) graphrbac.User {
 	cclient := graphrbac.NewSignedInUserClient(tenant)
-	cclient.Authorizer = GetAuthorizer(context.Background(), policy.TokenRequestOptions{
-		Scopes: []string{azure.PublicCloud.GraphEndpoint + "/.default"},
-		// TenantID: tenant,
+	cclient.Authorizer = GetAuthorizer(context.Background(), TokenOptions{
+		policy.TokenRequestOptions{Scopes: []string{azure.PublicCloud.GraphEndpoint + "/.default"}},
+		tenant,
 	})
-	u, err := cclient.Get(context.Background())
+	u, err := cclient.Get(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

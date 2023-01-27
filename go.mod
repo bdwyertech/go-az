@@ -15,7 +15,9 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.22
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.6
 	github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1
+	github.com/gofrs/flock v0.8.1
 	github.com/google/uuid v1.3.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
@@ -36,7 +38,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect

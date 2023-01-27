@@ -17,11 +17,18 @@ func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
 		log.Fatal(err)
 	}
 	if _, err = os.Stat(p); errors.Is(err, os.ErrNotExist) || refresh {
-		BuildProfile()
+		if err = BuildProfile(); err != nil {
+			log.Fatal(err)
+		}
 	}
 	o, err := cli.LoadProfile(p)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if len(o.Subscriptions) == 0 {
+		if err = BuildProfile(); err != nil {
+			log.Fatal(err)
+		}
 	}
 	return o.Subscriptions
 }
