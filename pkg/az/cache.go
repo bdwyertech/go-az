@@ -11,12 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
+	"github.com/mitchellh/go-homedir"
 )
 
 var credCache Cache
 
 func cacheDir() (d string) {
-	home, err := os.UserHomeDir()
+	home, err := homedir.Dir()
 	if err != nil {
 		log.Fatal(err)
 	}

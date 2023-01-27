@@ -19,7 +19,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/gofrs/flock"
-	"github.com/mitchellh/go-homedir"
 )
 
 // TokenCredential represents a credential capable of providing an OAuth token.
@@ -92,12 +91,7 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 	}
 
 	// Terraform might call out concurrently -- ensure we only have one interactive prompt at any given time
-	home, err := homedir.Dir()
-	if err != nil {
-		return
-	}
-
-	f := flock.New(filepath.Join(home, ".azure", ".go-az.lock"))
+	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
 	if _, err = f.TryLockContext(context.TODO(), 5*time.Second); err != nil {
 		return
 	}
