@@ -23,7 +23,7 @@ import (
 
 // TokenCredential represents a credential capable of providing an OAuth token.
 type TokenCredential struct {
-	TenantID string
+	ClientID, TenantID string
 }
 
 // GetToken requests an access token for the specified set of scopes.
@@ -31,7 +31,7 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	// if options.TenantID == "" && c.TenantID != "" {
 	// 	options.TenantID = c.TenantID
 	// }
-	token, err := GetToken(ctx, TokenOptions{options, c.TenantID})
+	token, err := GetToken(ctx, TokenOptions{options, c.ClientID, c.TenantID})
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
@@ -44,7 +44,7 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 
 type TokenOptions struct {
 	policy.TokenRequestOptions
-	TenantID string
+	ClientID, TenantID string
 }
 
 // GetToken requests an access token for the specified set of scopes.
@@ -64,7 +64,11 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
 	}
 
-	pubClient, err := public.New(AZ_CLIENT_ID, pubClientOpts...)
+	if options.ClientID == "" {
+		options.ClientID = AZ_CLIENT_ID
+	}
+
+	pubClient, err := public.New(options.ClientID, pubClientOpts...)
 	if err != nil {
 		return
 	}
@@ -175,7 +179,8 @@ func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAu
 	if err != nil {
 		log.Fatal(err)
 	}
-	t, err := adal.NewServicePrincipalTokenFromManualToken(*oauthCfg, AZ_CLIENT_ID, microsoftAuthorityHost, adalToken)
+
+	t, err := adal.NewServicePrincipalTokenFromManualToken(*oauthCfg, token.IDToken.Audience, microsoftAuthorityHost, adalToken)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -196,6 +201,7 @@ type AccessTokenOptions struct {
 	ResourceType   string
 	Scope          []string
 	Tenant         string
+	Client         string
 }
 
 func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {
@@ -207,7 +213,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
 	}
 
-	t, err := GetToken(ctx, TokenOptions{popts, opts.Tenant})
+	t, err := GetToken(ctx, TokenOptions{popts, opts.Client, opts.Tenant})
 	if err != nil {
 		return
 	}
