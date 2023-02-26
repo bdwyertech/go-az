@@ -1,7 +1,7 @@
 //
 // Go AZ - Kubernetes Credential Provider
 //
-// Copyright © 2022 Brian Dwyer - Intelligent Digital Services. All rights reserved.
+// Copyright © 2023 Brian Dwyer - Intelligent Digital Services. All rights reserved.
 //
 
 package cmd

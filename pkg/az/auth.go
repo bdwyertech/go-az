@@ -96,7 +96,7 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 
 	// Terraform might call out concurrently -- ensure we only have one interactive prompt at any given time
 	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-	if _, err = f.TryLockContext(context.TODO(), 5*time.Second); err != nil {
+	if _, err = f.TryLockContext(ctx, 5*time.Second); err != nil {
 		return
 	}
 	defer f.Unlock()
