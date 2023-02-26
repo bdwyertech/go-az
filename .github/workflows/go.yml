@@ -5,7 +5,7 @@ jobs:
     name: Build
     strategy:
       matrix:
-        go: [1.19]
+        go: ['1.20']
     runs-on: ubuntu-latest
     container: golang:${{ matrix.go }}
     steps:
@@ -35,7 +35,7 @@ jobs:
           go test -v -race $(go list ./... | grep -v /vendor/)
 
       - name: Run GoReleaser
-        if: startsWith(github.ref, 'refs/tags/') && (matrix.go == 1.19)
+        if: startsWith(github.ref, 'refs/tags/') && (matrix.go == 1.20)
         uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
@@ -46,3 +46,4 @@ jobs:
           SOURCE_NAME: ${{ steps.git.outputs.SOURCE_NAME }}
           SOURCE_BRANCH: ${{ steps.git.outputs.SOURCE_BRANCH }}
           SOURCE_TAG: ${{ steps.git.outputs.SOURCE_TAG }}
+# wget -qO- https://github.com/dominikh/go-tools/releases/download/${STATICCHECK_VERSION}/staticcheck_darwin_amd64.tar.gz | tar zxf - --directory /usr/local/bin --strip-components=1 staticcheck/staticcheck
