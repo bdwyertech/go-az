@@ -49,6 +49,13 @@ type TokenOptions struct {
 
 // GetToken requests an access token for the specified set of scopes.
 func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
+	// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
+	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
+	if _, err = f.TryLockContext(ctx, 5*time.Second); err != nil {
+		return
+	}
+	defer f.Unlock()
+
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
@@ -93,13 +100,6 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		}
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
-
-	// Terraform might call out concurrently -- ensure we only have one interactive prompt at any given time
-	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-	if _, err = f.TryLockContext(ctx, 5*time.Second); err != nil {
-		return
-	}
-	defer f.Unlock()
 
 	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
 	if err != nil {
