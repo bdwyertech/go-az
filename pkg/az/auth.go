@@ -3,6 +3,7 @@ package az
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -51,7 +52,7 @@ type TokenOptions struct {
 func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
 	// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
 	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-	if _, err = f.TryLockContext(ctx, 5*time.Second); err != nil {
+	if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(4)+1)*time.Second); err != nil {
 		return
 	}
 	defer f.Unlock()
