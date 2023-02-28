@@ -11,10 +11,19 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
+	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
 )
 
-var credCache Cache
+var credCache *Cache
+
+func init() {
+	cpath := cachePath()
+	credCache = &Cache{
+		path:  cpath,
+		mutex: flock.New(cpath),
+	}
+}
 
 func cacheDir() (d string) {
 	home, err := homedir.Dir()
@@ -32,10 +41,14 @@ func cachePath() string {
 	return filepath.Join(cacheDir(), "go_msal_token_cache.json")
 }
 
-type Cache struct{}
+type Cache struct {
+	path   string
+	mutex  *flock.Flock
+	locked bool
+	bytes  []byte
+}
 
-func (c Cache) Export(m cache.Marshaler, k string) {
-	cachePath := cachePath()
+func (c *Cache) Export(m cache.Marshaler, k string) {
 	jsonBytes, err := m.Marshal()
 	if err != nil {
 		log.Error(err)
@@ -43,17 +56,36 @@ func (c Cache) Export(m cache.Marshaler, k string) {
 	}
 	b := new(bytes.Buffer)
 	json.Indent(b, jsonBytes, "", "  ")
-	if err = os.WriteFile(cachePath, b.Bytes(), os.ModePerm); err != nil {
+	if bytes.Equal(c.bytes, b.Bytes()) {
+		// log.Debug("cache: already up to date")
+		return
+	}
+	// log.Debug("cache: acquiring write lock")
+	if err = c.mutex.Lock(); err != nil {
+		log.Error(err)
+		return
+	}
+	// log.Debug("cache: write lock acquired")
+	defer c.mutex.Unlock()
+	if err = os.WriteFile(c.path, b.Bytes(), os.ModePerm); err != nil {
 		log.Error(err)
 	}
 }
 
-func (c Cache) Replace(u cache.Unmarshaler, k string) {
-	out, err := os.ReadFile(cachePath())
+func (c *Cache) Replace(u cache.Unmarshaler, k string) {
+	// log.Debug("cache: acquiring read lock")
+	if err := c.mutex.RLock(); err != nil {
+		log.Error(err)
+		return
+	}
+	// log.Debug("cache: read lock acquired")
+	defer c.mutex.Unlock()
+	var err error
+	c.bytes, err = os.ReadFile(c.path)
 	if err != nil {
 		return
 	}
-	if err = u.Unmarshal(out); err != nil {
+	if err = u.Unmarshal(c.bytes); err != nil {
 		log.Error(err)
 	}
 }
@@ -124,6 +156,7 @@ func (l LocalCreds) AssertionForUser(user string) string {
 func LoadLocalCreds() (creds LocalCreds) {
 	out, err := os.ReadFile(cachePath())
 	if err != nil {
+		// log.Debugln(err)
 		return
 	}
 	if err = json.Unmarshal(out, &creds); err != nil {

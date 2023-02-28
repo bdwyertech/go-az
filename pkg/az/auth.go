@@ -50,13 +50,6 @@ type TokenOptions struct {
 
 // GetToken requests an access token for the specified set of scopes.
 func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
-	// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
-	f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-	if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(2000)+200)*time.Millisecond); err != nil {
-		return
-	}
-	defer f.Unlock()
-
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
@@ -121,6 +114,18 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 				log.Debug(err.Error())
 				return
 			}
+		}
+
+		if !credCache.locked {
+			// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
+			f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
+			log.Debug("Acquiring interactive lock")
+			if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(5000)+1000)*time.Millisecond); err != nil {
+				return
+			}
+			defer f.Unlock()
+			credCache.locked = true
+			return GetToken(ctx, options)
 		}
 
 		//
