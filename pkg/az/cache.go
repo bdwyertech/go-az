@@ -21,7 +21,7 @@ func init() {
 	cpath := cachePath()
 	credCache = &Cache{
 		path:  cpath,
-		mutex: flock.New(cpath),
+		mutex: flock.New(cpath + ".lock"),
 	}
 }
 
