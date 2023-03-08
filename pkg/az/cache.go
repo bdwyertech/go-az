@@ -2,6 +2,7 @@ package az
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -48,46 +49,48 @@ type Cache struct {
 	bytes  []byte
 }
 
-func (c *Cache) Export(m cache.Marshaler, k string) {
+func (c *Cache) Export(ctx context.Context, m cache.Marshaler, k cache.ExportHints) error {
 	jsonBytes, err := m.Marshal()
 	if err != nil {
 		log.Error(err)
-		return
+		return nil
 	}
 	b := new(bytes.Buffer)
 	json.Indent(b, jsonBytes, "", "  ")
 	if bytes.Equal(c.bytes, b.Bytes()) {
 		// log.Debug("cache: already up to date")
-		return
+		return nil
 	}
 	// log.Debug("cache: acquiring write lock")
 	if err = c.mutex.Lock(); err != nil {
 		log.Error(err)
-		return
+		return nil
 	}
 	// log.Debug("cache: write lock acquired")
 	defer c.mutex.Unlock()
 	if err = os.WriteFile(c.path, b.Bytes(), os.ModePerm); err != nil {
 		log.Error(err)
 	}
+	return nil
 }
 
-func (c *Cache) Replace(u cache.Unmarshaler, k string) {
+func (c *Cache) Replace(ctx context.Context, u cache.Unmarshaler, k cache.ReplaceHints) error {
 	// log.Debug("cache: acquiring read lock")
 	if err := c.mutex.RLock(); err != nil {
 		log.Error(err)
-		return
+		return nil
 	}
 	// log.Debug("cache: read lock acquired")
 	defer c.mutex.Unlock()
 	var err error
 	c.bytes, err = os.ReadFile(c.path)
 	if err != nil {
-		return
+		return nil
 	}
 	if err = u.Unmarshal(c.bytes); err != nil {
 		log.Error(err)
 	}
+	return nil
 }
 
 type LocalCreds struct {

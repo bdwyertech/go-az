@@ -14,7 +14,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.28
 	github.com/Azure/go-autorest/autorest/adal v0.9.22
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.6
-	github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1
+	github.com/AzureAD/microsoft-authentication-library-for-go v0.9.0
 	github.com/gofrs/flock v0.8.1
 	github.com/google/uuid v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0

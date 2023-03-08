@@ -81,7 +81,7 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 	}
 
 	opts := []public.AcquireSilentOption{}
-	if cachedAccounts := pubClient.Accounts(); len(cachedAccounts) > 0 {
+	if cachedAccounts, err := pubClient.Accounts(ctx); err == nil && len(cachedAccounts) > 0 {
 		var selected *public.Account
 		for _, a := range cachedAccounts {
 			if a.Realm == options.TenantID {
@@ -233,11 +233,11 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 	return
 }
 
-func GetCachedAccounts() []public.Account {
+func GetCachedAccounts(ctx context.Context) (accounts []public.Account, err error) {
 	pubClient, err := public.New(AZ_CLIENT_ID, public.WithCache(credCache))
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
-	return pubClient.Accounts()
+	return pubClient.Accounts(ctx)
 }

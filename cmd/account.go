@@ -124,11 +124,18 @@ var accountCachedCmd = &cobra.Command{
 	Use:   "cached",
 	Short: "List cached accounts.",
 	Run: func(cmd *cobra.Command, args []string) {
-		cached := az.GetCachedAccounts()
-		jsonBytes, err := json.MarshalIndent(cached, "", "  ")
+		cached, err := az.GetCachedAccounts(cmd.Context())
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(string(jsonBytes))
+		if len(cached) == 0 {
+			fmt.Println("[]")
+		} else {
+			jsonBytes, err := json.MarshalIndent(cached, "", "  ")
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(string(jsonBytes))
+		}
 	},
 }
