@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -131,21 +132,28 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		//
 		// AcquireTokenInteractive
 		//
+
+		// Keepalives do not play nice with aggressive proxies here
+		t.DisableKeepAlives = true
+		defer func() { t.DisableKeepAlives = false }()
+
+		if os.Getenv("GO_AZ_DEVICECODE") != "" {
+			var code public.DeviceCode
+			code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes)
+			if err != nil {
+				return
+			}
+			log.Info(code.Result.Message)
+			return code.AuthenticationResult(ctx)
+		}
+
 		var port int
 		port, err = getFreePort()
 		if err != nil {
 			return
 		}
 
-		//
-		// Keepalives do not play nice with aggressive proxies here
-		//
-		t.DisableKeepAlives = true
-		token, err = pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
-		if err != nil {
-			return
-		}
-		t.DisableKeepAlives = false
+		return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
 	}
 
 	return
