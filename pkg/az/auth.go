@@ -111,7 +111,10 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 			//} else if err.Error() != "access token not found" && err.Error() != "no token found" && err.Error() != "not found" {
 		} else {
 			switch err.Error() {
-			case "no token found", "access token not found", "not found":
+			case "no token found",
+				"access token not found",
+				"not found",
+				"no account was specified with public.WithAccount(), or the specified account is invalid":
 			default:
 				log.Debug(err.Error())
 				return
