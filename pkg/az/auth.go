@@ -2,6 +2,9 @@ package az
 
 import (
 	"context"
+	_ "embed"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
@@ -21,7 +24,14 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/gofrs/flock"
+	"github.com/skratchdot/open-golang/open"
 )
+
+//go:embed static/success.html
+var okPage []byte
+
+//go:embed static/fail.html
+var failPage string
 
 // TokenCredential represents a credential capable of providing an OAuth token.
 type TokenCredential struct {
@@ -141,6 +151,9 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		t.DisableKeepAlives = true
 		defer func() { t.DisableKeepAlives = false }()
 
+		//
+		// Device Code Flow
+		//
 		if os.Getenv("GO_AZ_DEVICECODE") != "" {
 			var code public.DeviceCode
 			code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes)
@@ -151,30 +164,79 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 			return code.AuthenticationResult(ctx)
 		}
 
+		//
+		// Authorization Code Flow
+		//
+		ictx, done := context.WithTimeout(ctx, 5*time.Minute)
+		defer done()
+		var callbackUrl string
+		var code string
 		var port int
-		port, err = getFreePort()
-		if err != nil {
-			return
+		var listener net.Listener
+		if os.Getenv("DEVWORKSPACE_METADATA") != "" {
+			// Port has to be under 32000
+			// https://github.com/che-incubator/che-code/blob/62888bf26329f8a53830a3e5c557e8efa2f3996c/code/extensions/che-port/src/ports-plugin.ts#LL165C28-L165C33
+			port = 31999
+			for {
+				if listener, err = net.Listen("tcp", fmt.Sprintf(":%v", port)); err == nil {
+					break
+				}
+				port = port - 1
+			}
+		} else {
+			if listener, err = net.Listen("tcp", ":0"); err != nil {
+				return
+			}
+			port = listener.Addr().(*net.TCPAddr).Port
+		}
+		defer listener.Close()
+
+		if okPageb64 := os.Getenv("GO_AZ_OKPAGE_B64"); okPageb64 != "" {
+			if okPage, err = base64.StdEncoding.DecodeString(okPageb64); err != nil {
+				return
+			}
 		}
 
-		return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			q := r.URL.Query()
+			if headerErr := q.Get("error"); headerErr != "" {
+				desc := q.Get("error_description")
+				w.Write([]byte(fmt.Sprintf(failPage, headerErr, desc)))
+				log.Errorln(headerErr, desc)
+				return
+			}
+			if code = q.Get("code"); code != "" {
+				w.Write(okPage)
+				done()
+				return
+			}
+			// Determine the callback URL from the first request
+			if r.URL.Host == "" {
+				r.URL.Host = fmt.Sprintf("localhost:%v", port)
+				r.URL.Scheme = "http"
+			}
+			callbackUrl = r.URL.String()
+			url, err := pubClient.AuthCodeURL(ctx, options.ClientID, callbackUrl, options.Scopes)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintln(w, err)
+				return
+			}
+			http.Redirect(w, r, url, http.StatusFound)
+		})
+		go http.Serve(listener, mux)
+		if os.Getenv("DEVWORKSPACE_METADATA") == "" {
+			open.Start(fmt.Sprintf("http://localhost:%v", port))
+		}
+		<-ictx.Done()
+		if err = ictx.Err(); !errors.Is(err, context.Canceled) {
+			return
+		}
+		return pubClient.AcquireTokenByAuthCode(ctx, code, callbackUrl, options.Scopes)
 	}
 
 	return
-}
-
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
 func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAuthorizer {
