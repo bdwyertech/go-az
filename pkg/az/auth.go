@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -95,72 +94,48 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		}
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
-
-	token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...)
-	if err != nil {
-		if strings.Contains(err.Error(), "AADSTS700082") || strings.Contains(err.Error(), "token_expired") || // Token Expired
-			strings.Contains(err.Error(), "AADSTS50076") || // MFA Required
-			strings.Contains(err.Error(), "AADSTS50079") || // MFA Enrollment Required
-			// AADSTS50079: Due to a configuration change made by your administrator, or because you moved to a new location, you must enroll in multi-factor authentication
-			strings.Contains(err.Error(), "AADSTS50173") || // Expired Grant
-			strings.Contains(err.Error(), "AADSTS70043") { // Refresh Token Expired
-			// AADSTS53003 - Access has been blocked by Conditional Access policies -- probably need to update OS or Browser
-			//
-			// http call(https://login.microsoftonline.com/organizations/oauth2/v2.0/token)(POST) error: reply status code was 400:
-			// {"error":"invalid_grant","error_description":"AADSTS70043: The refresh token has expired or is invalid due to sign-in frequency checks by conditional access. The token was issued on 2022-01-15T22:57:51.2550000Z and the maximum allowed lifetime for this request is 32400.\r\nTrace ID: 05c52010-d810-4d78-91ca-c1318ad4ca00\r\nCorrelation ID: 6d2db73d-1006-47bb-a55b-1adb26ccc06e\r\nTimestamp: 2022-01-16 19:11:53Z","error_codes":[70043],"timestamp":"2022-01-16 19:11:53Z","trace_id":"05c52010-d810-4d78-91ca-c1318ad4ca00","correlation_id":"6d2db73d-1006-47bb-a55b-1adb26ccc06e","suberror":"token_expired"}
-			//} else if err.Error() != "access token not found" && err.Error() != "no token found" && err.Error() != "not found" {
-		} else {
-			switch err.Error() {
-			case "no token found",
-				"access token not found",
-				"not found",
-				"no account was specified with public.WithAccount(), or the specified account is invalid":
-			default:
-				log.Debug(err.Error())
-				return
-			}
+	if !credCache.locked {
+		if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
+			return
 		}
-
-		if !credCache.locked {
-			// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
-			f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-			log.Debug("Acquiring interactive lock")
-			if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(5000)+1000)*time.Millisecond); err != nil {
-				return
-			}
-			defer f.Unlock()
-			credCache.locked = true
-			return GetToken(ctx, options)
+		log.Debugln("Silent token aquisition failed, proceeding to Interactive:", err.Error())
+		// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
+		f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
+		log.Debugln("Acquiring interactive lock")
+		if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(5000)+1000)*time.Millisecond); err != nil {
+			return
 		}
+		defer f.Unlock()
+		credCache.locked = true
+		return GetToken(ctx, options)
+	}
 
-		//
-		// AcquireTokenInteractive
-		//
+	//
+	// AcquireTokenInteractive
+	//
 
-		// Keepalives do not play nice with aggressive proxies here
-		t.DisableKeepAlives = true
-		defer func() { t.DisableKeepAlives = false }()
+	// Keepalives do not play nice with aggressive proxies here
+	t.DisableKeepAlives = true
+	defer func() { t.DisableKeepAlives = false }()
 
-		if os.Getenv("GO_AZ_DEVICECODE") != "" {
-			var code public.DeviceCode
-			code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes)
-			if err != nil {
-				return
-			}
-			log.Info(code.Result.Message)
-			return code.AuthenticationResult(ctx)
-		}
-
-		var port int
-		port, err = getFreePort()
+	if os.Getenv("GO_AZ_DEVICECODE") != "" {
+		var code public.DeviceCode
+		code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes)
 		if err != nil {
 			return
 		}
-
-		return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
+		log.Info(code.Result.Message)
+		return code.AuthenticationResult(ctx)
 	}
 
-	return
+	var port int
+	port, err = getFreePort()
+	if err != nil {
+		return
+	}
+
+	return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
+
 }
 
 func getFreePort() (int, error) {
