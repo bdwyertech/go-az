@@ -94,10 +94,10 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		}
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
-	if !credCache.locked {
-		if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
-			return
-		}
+	// We need to try to AcquireTokenSilent again because another process holding the lock may have returned successfully
+	if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
+		return
+	} else if !credCache.locked {
 		log.Debugln("Silent token aquisition failed, proceeding to Interactive:", err.Error())
 		// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
 		f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
