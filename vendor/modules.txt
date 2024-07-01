@@ -92,8 +92,8 @@ github.com/dimchansky/utfbom
 # github.com/fsnotify/fsnotify v1.7.0
 ## explicit; go 1.17
 github.com/fsnotify/fsnotify
-# github.com/gofrs/flock v0.8.1
-## explicit
+# github.com/gofrs/flock v0.11.0
+## explicit; go 1.21.0
 github.com/gofrs/flock
 # github.com/golang-jwt/jwt/v4 v4.5.0
 ## explicit; go 1.16
