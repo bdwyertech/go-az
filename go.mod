@@ -2,7 +2,7 @@ module github.com/bdwyertech/go-az
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 // replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8
 
