@@ -79,7 +79,6 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 			azure.PublicCloud.ServiceManagementEndpoint + "/.default", // https://management.core.windows.net//.default
 		}
 	}
-
 	opts := []public.AcquireSilentOption{}
 	if cachedAccounts, err := pubClient.Accounts(ctx); err == nil && len(cachedAccounts) > 0 {
 		var selected *public.Account
@@ -89,11 +88,14 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 				break
 			}
 		}
+
 		if selected == nil {
 			selected = &cachedAccounts[0]
 		}
+
 		opts = append(opts, public.WithSilentAccount(*selected))
 	}
+	opts = append(opts, public.WithTenantID(options.TenantID))
 	// We need to try to AcquireTokenSilent again because another process holding the lock may have returned successfully
 	if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
 		return
@@ -120,7 +122,7 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 
 	if os.Getenv("GO_AZ_DEVICECODE") != "" {
 		var code public.DeviceCode
-		code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes)
+		code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes, public.WithTenantID(options.TenantID))
 		if err != nil {
 			return
 		}
@@ -134,8 +136,7 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		return
 	}
 
-	return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)))
-
+	return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)), public.WithTenantID(options.TenantID))
 }
 
 func getFreePort() (int, error) {

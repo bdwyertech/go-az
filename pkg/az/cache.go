@@ -101,6 +101,7 @@ type LocalCreds struct {
 		LocalAccountID string `json:"local_account_id"`
 		Username       string `json:"username"`
 		AuthorityType  string `json:"authority_type"`
+		AccountSource  string `json:"account_source"`
 	} `json:"Account"`
 	AccessToken map[string]struct {
 		HomeAccountID     string `json:"home_account_id"`
@@ -113,6 +114,7 @@ type LocalCreds struct {
 		ExpiresOn         string `json:"expires_on"`
 		ExtendedExpiresOn string `json:"extended_expires_on"`
 		CachedAt          string `json:"cached_at"`
+		TokenType         string `json:"token_type"`
 	} `json:"AccessToken"`
 	RefreshToken map[string]struct {
 		HomeAccountID  string `json:"home_account_id"`
@@ -121,6 +123,7 @@ type LocalCreds struct {
 		ClientID       string `json:"client_id"`
 		FamilyID       string `json:"family_id"`
 		Secret         string `json:"secret"`
+		Target         string `json:"target"`
 	} `json:"RefreshToken"`
 	IdToken map[string]struct {
 		HomeAccountID  string `json:"home_account_id"`
@@ -128,7 +131,13 @@ type LocalCreds struct {
 		CredentialType string `json:"credential_type"`
 		ClientID       string `json:"client_id"`
 		Secret         string `json:"secret"`
+		Realm          string `json:"realm"`
 	} `json:"IdToken"`
+	AppMetadata map[string]struct {
+		Environment string `json:"environment"`
+		ClientID    string `json:"client_id"`
+		FamilyID    string `json:"family_id"`
+	} `json:"AppMetadata"`
 }
 
 func (l LocalCreds) First() interface{} {
