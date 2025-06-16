@@ -45,22 +45,22 @@ var organizationsCmd = &cobra.Command{
 			}
 		} else {
 			table := tablewriter.NewWriter(os.Stdout)
-			table.Header([]string{"Tenant ID", "Display Name", "Default Domain", "Has Resources", "Tenant Type"})
+			table.Header([]string{"Tenant ID", "Display Name", "Default Domain", "Has Subscriptions", "Tenant Type"})
 			table.Configure(func(config *tablewriter.Config) {
 				config.Row.Alignment.Global = tw.AlignLeft
 			})
 
 			for _, org := range organizations {
-				hasResources := "No"
+				hasSubscriptions := "No"
 				if org.IsResourceTenant {
-					hasResources = "Yes"
+					hasSubscriptions = "Yes"
 				}
 
 				table.Append([]string{
 					org.ID,
 					org.DisplayName,
 					org.DefaultDomain,
-					hasResources,
+					hasSubscriptions,
 					org.TenantType,
 				})
 			}
