@@ -83,9 +83,19 @@ func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription
 		if err != nil {
 			log.Fatalln("failed to advance page:", err)
 		}
-		subscriptions = append(subscriptions, nextResult.Value...)
+
+		// Filter for only enabled/active subscriptions
+		for _, sub := range nextResult.Value {
+			if sub.State != nil {
+				switch *sub.State {
+				case armsubscription.SubscriptionStateDisabled, armsubscription.SubscriptionStateDeleted:
+					continue // Skip disabled or deleted subscriptions
+				default:
+					subscriptions = append(subscriptions, sub)
+				}
+			}
+		}
 	}
-	// TODO: Ensure we only return "enabled" subscriptions
 	return
 }
 
