@@ -9,10 +9,15 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 
 	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -26,7 +31,7 @@ var tenantsCmd = &cobra.Command{
 	Short: "List tenant details",
 	Long:  `List all Azure AD tenants you have access to with subscription counts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		details, _ := cmd.Flags().GetBool("detailed")
+		details := viper.GetBool("detailed")
 
 		if details {
 			// Use the detailed Graph API version
@@ -36,39 +41,47 @@ var tenantsCmd = &cobra.Command{
 				return
 			}
 
-			if jsonOutput, _ := cmd.Flags().GetBool("json"); jsonOutput {
-				data, err := json.MarshalIndent(organizations, "", "  ")
-				if err != nil {
+			if jsonOutput := viper.GetBool("json"); jsonOutput {
+				enc := json.NewEncoder(os.Stdout)
+				enc.SetIndent("", "  ")
+				if err := enc.Encode(organizations); err != nil {
 					fmt.Printf("Error marshaling JSON: %v\n", err)
 					return
 				}
-				fmt.Println(string(data))
 			} else {
-				fmt.Printf("%-36s %-40s %-30s %s\n", "Tenant ID", "Display Name", "Default Domain", "Tenant Type")
-				fmt.Println("-----------------------------------------------------------------------------------------")
+				table := tablewriter.NewWriter(os.Stdout)
+				table.Header([]string{"Tenant ID", "Display Name", "Default Domain", "Tenant Type"})
+				table.Configure(func(config *tablewriter.Config) {
+					config.Row.Alignment.Global = tw.AlignLeft
+				})
 
 				for _, org := range organizations {
-					fmt.Printf("%-36s %-40s %-30s %s\n",
+					table.Append([]string{
 						org.ID,
 						org.DisplayName,
 						org.DefaultDomain,
-						org.TenantType)
+						org.TenantType,
+					})
 				}
+				table.Render()
 			}
 		} else {
 			// Use the simple version
 			tenantDetails := az.ListTenantDetails()
 
-			if jsonOutput, _ := cmd.Flags().GetBool("json"); jsonOutput {
-				data, err := json.MarshalIndent(tenantDetails, "", "  ")
-				if err != nil {
+			if jsonOutput := viper.GetBool("json"); jsonOutput {
+				enc := json.NewEncoder(os.Stdout)
+				enc.SetIndent("", "  ")
+				if err := enc.Encode(tenantDetails); err != nil {
 					fmt.Printf("Error marshaling JSON: %v\n", err)
 					return
 				}
-				fmt.Println(string(data))
 			} else {
-				fmt.Printf("%-36s %-15s %s\n", "Tenant ID", "Subscriptions", "Has Resources")
-				fmt.Println("----------------------------------------------------------------")
+				table := tablewriter.NewWriter(os.Stdout)
+				table.Header([]string{"Tenant ID", "Subscriptions", "Has Subscriptions"})
+				table.Configure(func(config *tablewriter.Config) {
+					config.Row.Alignment.Global = tw.AlignLeft
+				})
 
 				for _, detail := range tenantDetails {
 					hasResources := "No"
@@ -76,11 +89,13 @@ var tenantsCmd = &cobra.Command{
 						hasResources = "Yes"
 					}
 
-					fmt.Printf("%-36s %-15d %s\n",
+					table.Append([]string{
 						detail.TenantID,
-						detail.SubscriptionCount,
-						hasResources)
+						fmt.Sprintf("%d", detail.SubscriptionCount),
+						hasResources,
+					})
 				}
+				table.Render()
 			}
 		}
 	},

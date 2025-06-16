@@ -9,10 +9,15 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 
 	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -31,16 +36,19 @@ var organizationsCmd = &cobra.Command{
 			return
 		}
 
-		if jsonOutput, _ := cmd.Flags().GetBool("json"); jsonOutput {
-			data, err := json.MarshalIndent(organizations, "", "  ")
-			if err != nil {
+		if jsonOutput := viper.GetBool("json"); jsonOutput {
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			if err := enc.Encode(organizations); err != nil {
 				fmt.Printf("Error marshaling JSON: %v\n", err)
 				return
 			}
-			fmt.Println(string(data))
 		} else {
-			fmt.Printf("%-36s %-40s %-30s %-15s %s\n", "Tenant ID", "Display Name", "Default Domain", "Has Resources", "Tenant Type")
-			fmt.Println("----------------------------------------------------------------------------------------------------")
+			table := tablewriter.NewWriter(os.Stdout)
+			table.Header([]string{"Tenant ID", "Display Name", "Default Domain", "Has Resources", "Tenant Type"})
+			table.Configure(func(config *tablewriter.Config) {
+				config.Row.Alignment.Global = tw.AlignLeft
+			})
 
 			for _, org := range organizations {
 				hasResources := "No"
@@ -48,13 +56,15 @@ var organizationsCmd = &cobra.Command{
 					hasResources = "Yes"
 				}
 
-				fmt.Printf("%-36s %-40s %-30s %-15s %s\n",
+				table.Append([]string{
 					org.ID,
 					org.DisplayName,
 					org.DefaultDomain,
 					hasResources,
-					org.TenantType)
+					org.TenantType,
+				})
 			}
+			table.Render()
 		}
 	},
 }
