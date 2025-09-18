@@ -68,6 +68,21 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 				},
 			})
 		}
+		// Emulate Behavior of --allow-no-subscriptions
+		if len(subscriptions) == 0 {
+			subscriptions = append(subscriptions, cli.Subscription{
+				EnvironmentName: "AzureCloud",
+				ID:              *t.TenantID,
+				IsDefault:       true,
+				Name:            "N/A(tenant level account)",
+				State:           "Enabled",
+				TenantID:        *t.TenantID,
+				User: &cli.User{
+					Name: UserForTenant(*t.TenantID),
+					Type: "user",
+				},
+			})
+		}
 	}
 	return
 }
