@@ -56,6 +56,22 @@ func (m *EdiscoveryEstimateOperation) GetFieldDeserializers()(map[string]func(i8
         }
         return nil
     }
+    res["reportFileMetadata"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetCollectionOfObjectValues(CreateReportFileMetadataFromDiscriminatorValue)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            res := make([]ReportFileMetadataable, len(val))
+            for i, v := range val {
+                if v != nil {
+                    res[i] = v.(ReportFileMetadataable)
+                }
+            }
+            m.SetReportFileMetadata(res)
+        }
+        return nil
+    }
     res["search"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetObjectValue(CreateEdiscoverySearchFromDiscriminatorValue)
         if err != nil {
@@ -73,6 +89,16 @@ func (m *EdiscoveryEstimateOperation) GetFieldDeserializers()(map[string]func(i8
         }
         if val != nil {
             m.SetSiteCount(val)
+        }
+        return nil
+    }
+    res["statisticsOptions"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetEnumValue(ParseStatisticsOptions)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetStatisticsOptions(val.(*StatisticsOptions))
         }
         return nil
     }
@@ -134,6 +160,18 @@ func (m *EdiscoveryEstimateOperation) GetMailboxCount()(*int32) {
     }
     return nil
 }
+// GetReportFileMetadata gets the reportFileMetadata property value. Contains the properties for report file metadata, including downloadUrl, fileName, and size.
+// returns a []ReportFileMetadataable when successful
+func (m *EdiscoveryEstimateOperation) GetReportFileMetadata()([]ReportFileMetadataable) {
+    val, err := m.GetBackingStore().Get("reportFileMetadata")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.([]ReportFileMetadataable)
+    }
+    return nil
+}
 // GetSearch gets the search property value. eDiscovery search.
 // returns a EdiscoverySearchable when successful
 func (m *EdiscoveryEstimateOperation) GetSearch()(EdiscoverySearchable) {
@@ -155,6 +193,18 @@ func (m *EdiscoveryEstimateOperation) GetSiteCount()(*int32) {
     }
     if val != nil {
         return val.(*int32)
+    }
+    return nil
+}
+// GetStatisticsOptions gets the statisticsOptions property value. The options to generate statistics. Possible values are: includeRefiners, includeQueryStats, includeUnindexedStats, advancedIndexing, locationsWithoutHits, unknownFutureValue.
+// returns a *StatisticsOptions when successful
+func (m *EdiscoveryEstimateOperation) GetStatisticsOptions()(*StatisticsOptions) {
+    val, err := m.GetBackingStore().Get("statisticsOptions")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*StatisticsOptions)
     }
     return nil
 }
@@ -206,6 +256,18 @@ func (m *EdiscoveryEstimateOperation) Serialize(writer i878a80d2330e89d26896388a
             return err
         }
     }
+    if m.GetReportFileMetadata() != nil {
+        cast := make([]i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable, len(m.GetReportFileMetadata()))
+        for i, v := range m.GetReportFileMetadata() {
+            if v != nil {
+                cast[i] = v.(i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable)
+            }
+        }
+        err = writer.WriteCollectionOfObjectValues("reportFileMetadata", cast)
+        if err != nil {
+            return err
+        }
+    }
     {
         err = writer.WriteObjectValue("search", m.GetSearch())
         if err != nil {
@@ -214,6 +276,13 @@ func (m *EdiscoveryEstimateOperation) Serialize(writer i878a80d2330e89d26896388a
     }
     {
         err = writer.WriteInt32Value("siteCount", m.GetSiteCount())
+        if err != nil {
+            return err
+        }
+    }
+    if m.GetStatisticsOptions() != nil {
+        cast := (*m.GetStatisticsOptions()).String()
+        err = writer.WriteStringValue("statisticsOptions", &cast)
         if err != nil {
             return err
         }
@@ -253,6 +322,13 @@ func (m *EdiscoveryEstimateOperation) SetMailboxCount(value *int32)() {
         panic(err)
     }
 }
+// SetReportFileMetadata sets the reportFileMetadata property value. Contains the properties for report file metadata, including downloadUrl, fileName, and size.
+func (m *EdiscoveryEstimateOperation) SetReportFileMetadata(value []ReportFileMetadataable)() {
+    err := m.GetBackingStore().Set("reportFileMetadata", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetSearch sets the search property value. eDiscovery search.
 func (m *EdiscoveryEstimateOperation) SetSearch(value EdiscoverySearchable)() {
     err := m.GetBackingStore().Set("search", value)
@@ -263,6 +339,13 @@ func (m *EdiscoveryEstimateOperation) SetSearch(value EdiscoverySearchable)() {
 // SetSiteCount sets the siteCount property value. The number of mailboxes that had search hits.
 func (m *EdiscoveryEstimateOperation) SetSiteCount(value *int32)() {
     err := m.GetBackingStore().Set("siteCount", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetStatisticsOptions sets the statisticsOptions property value. The options to generate statistics. Possible values are: includeRefiners, includeQueryStats, includeUnindexedStats, advancedIndexing, locationsWithoutHits, unknownFutureValue.
+func (m *EdiscoveryEstimateOperation) SetStatisticsOptions(value *StatisticsOptions)() {
+    err := m.GetBackingStore().Set("statisticsOptions", value)
     if err != nil {
         panic(err)
     }
@@ -287,15 +370,19 @@ type EdiscoveryEstimateOperationable interface {
     GetIndexedItemCount()(*int64)
     GetIndexedItemsSize()(*int64)
     GetMailboxCount()(*int32)
+    GetReportFileMetadata()([]ReportFileMetadataable)
     GetSearch()(EdiscoverySearchable)
     GetSiteCount()(*int32)
+    GetStatisticsOptions()(*StatisticsOptions)
     GetUnindexedItemCount()(*int64)
     GetUnindexedItemsSize()(*int64)
     SetIndexedItemCount(value *int64)()
     SetIndexedItemsSize(value *int64)()
     SetMailboxCount(value *int32)()
+    SetReportFileMetadata(value []ReportFileMetadataable)()
     SetSearch(value EdiscoverySearchable)()
     SetSiteCount(value *int32)()
+    SetStatisticsOptions(value *StatisticsOptions)()
     SetUnindexedItemCount(value *int64)()
     SetUnindexedItemsSize(value *int64)()
 }

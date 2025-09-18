@@ -34,7 +34,7 @@ func (m *Presence) GetActivity()(*string) {
     }
     return nil
 }
-// GetAvailability gets the availability property value. The base presence information for a user. Possible values are Available, AvailableIdle,  Away, BeRightBack, Busy, BusyIdle, DoNotDisturb, Offline, PresenceUnknown
+// GetAvailability gets the availability property value. The base presence information for a user. Possible values are Available, availableIdle,  Away, beRightBack, Busy, busyIdle, DoNotDisturb, Offline, presenceUnknown.
 // returns a *string when successful
 func (m *Presence) GetAvailability()(*string) {
     val, err := m.GetBackingStore().Get("availability")
@@ -70,6 +70,26 @@ func (m *Presence) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896
         }
         return nil
     }
+    res["outOfOfficeSettings"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetObjectValue(CreateOutOfOfficeSettingsFromDiscriminatorValue)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetOutOfOfficeSettings(val.(OutOfOfficeSettingsable))
+        }
+        return nil
+    }
+    res["sequenceNumber"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetStringValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetSequenceNumber(val)
+        }
+        return nil
+    }
     res["statusMessage"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetObjectValue(CreatePresenceStatusMessageFromDiscriminatorValue)
         if err != nil {
@@ -81,6 +101,30 @@ func (m *Presence) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896
         return nil
     }
     return res
+}
+// GetOutOfOfficeSettings gets the outOfOfficeSettings property value. The user's out-of-office settings.
+// returns a OutOfOfficeSettingsable when successful
+func (m *Presence) GetOutOfOfficeSettings()(OutOfOfficeSettingsable) {
+    val, err := m.GetBackingStore().Get("outOfOfficeSettings")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(OutOfOfficeSettingsable)
+    }
+    return nil
+}
+// GetSequenceNumber gets the sequenceNumber property value. The lexicographically sortable string stamp that represents the version of a presence object.
+// returns a *string when successful
+func (m *Presence) GetSequenceNumber()(*string) {
+    val, err := m.GetBackingStore().Get("sequenceNumber")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*string)
+    }
+    return nil
 }
 // GetStatusMessage gets the statusMessage property value. The presence status message of a user.
 // returns a PresenceStatusMessageable when successful
@@ -113,6 +157,12 @@ func (m *Presence) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6c01
         }
     }
     {
+        err = writer.WriteObjectValue("outOfOfficeSettings", m.GetOutOfOfficeSettings())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteObjectValue("statusMessage", m.GetStatusMessage())
         if err != nil {
             return err
@@ -127,9 +177,23 @@ func (m *Presence) SetActivity(value *string)() {
         panic(err)
     }
 }
-// SetAvailability sets the availability property value. The base presence information for a user. Possible values are Available, AvailableIdle,  Away, BeRightBack, Busy, BusyIdle, DoNotDisturb, Offline, PresenceUnknown
+// SetAvailability sets the availability property value. The base presence information for a user. Possible values are Available, availableIdle,  Away, beRightBack, Busy, busyIdle, DoNotDisturb, Offline, presenceUnknown.
 func (m *Presence) SetAvailability(value *string)() {
     err := m.GetBackingStore().Set("availability", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetOutOfOfficeSettings sets the outOfOfficeSettings property value. The user's out-of-office settings.
+func (m *Presence) SetOutOfOfficeSettings(value OutOfOfficeSettingsable)() {
+    err := m.GetBackingStore().Set("outOfOfficeSettings", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetSequenceNumber sets the sequenceNumber property value. The lexicographically sortable string stamp that represents the version of a presence object.
+func (m *Presence) SetSequenceNumber(value *string)() {
+    err := m.GetBackingStore().Set("sequenceNumber", value)
     if err != nil {
         panic(err)
     }
@@ -146,8 +210,12 @@ type Presenceable interface {
     i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable
     GetActivity()(*string)
     GetAvailability()(*string)
+    GetOutOfOfficeSettings()(OutOfOfficeSettingsable)
+    GetSequenceNumber()(*string)
     GetStatusMessage()(PresenceStatusMessageable)
     SetActivity(value *string)()
     SetAvailability(value *string)()
+    SetOutOfOfficeSettings(value OutOfOfficeSettingsable)()
+    SetSequenceNumber(value *string)()
     SetStatusMessage(value PresenceStatusMessageable)()
 }

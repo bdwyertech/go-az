@@ -1,8 +1,8 @@
 {
-  "descriptionHash": "DC76951D56E07E02FAE4CEA53E0F3DA51FF94BE7BFEEB376CEAB0FBA0F607E722A70E75538B0620DFC63DC1529FFFE3C276BA008C93D01A46B33234A8860A330",
+  "descriptionHash": "9F8BCAD2CBA94367538D693D2B5E1A5481EC3B46A855EF4176C4BDAC7D0E781179163B42991046F2FAC996400537402F6AEBDDEEE56FD857329D1F3CAEF6A8BA",
   "descriptionLocation": "../../msgraph-metadata/clean_v10_openapi/openapi.yaml",
   "lockFileVersion": "1.0.0",
-  "kiotaVersion": "1.27.0",
+  "kiotaVersion": "1.29.0",
   "clientClassName": "GraphBaseServiceClient",
   "typeAccessModifier": "Public",
   "clientNamespaceName": "github.com/microsoftgraph/msgraph-sdk-go/",

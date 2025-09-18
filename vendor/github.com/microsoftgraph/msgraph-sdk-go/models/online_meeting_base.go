@@ -78,6 +78,18 @@ func (m *OnlineMeetingBase) GetAllowBreakoutRooms()(*bool) {
     }
     return nil
 }
+// GetAllowCopyingAndSharingMeetingContent gets the allowCopyingAndSharingMeetingContent property value. Indicates whether the ability to copy and share meeting content is enabled for the meeting.
+// returns a *bool when successful
+func (m *OnlineMeetingBase) GetAllowCopyingAndSharingMeetingContent()(*bool) {
+    val, err := m.GetBackingStore().Get("allowCopyingAndSharingMeetingContent")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*bool)
+    }
+    return nil
+}
 // GetAllowedLobbyAdmitters gets the allowedLobbyAdmitters property value. Specifies the users who can admit from the lobby. Possible values are: organizerAndCoOrganizersAndPresenters, organizerAndCoOrganizers, unknownFutureValue.
 // returns a *AllowedLobbyAdmitterRoles when successful
 func (m *OnlineMeetingBase) GetAllowedLobbyAdmitters()(*AllowedLobbyAdmitterRoles) {
@@ -90,7 +102,7 @@ func (m *OnlineMeetingBase) GetAllowedLobbyAdmitters()(*AllowedLobbyAdmitterRole
     }
     return nil
 }
-// GetAllowedPresenters gets the allowedPresenters property value. Specifies who can be a presenter in a meeting.
+// GetAllowedPresenters gets the allowedPresenters property value. Specifies who can be a presenter in a meeting. Possible values are: everyone, organization, roleIsPresenter, organizer, unknownFutureValue. Inherited from onlineMeetingBase.
 // returns a *OnlineMeetingPresenters when successful
 func (m *OnlineMeetingBase) GetAllowedPresenters()(*OnlineMeetingPresenters) {
     val, err := m.GetBackingStore().Get("allowedPresenters")
@@ -280,6 +292,16 @@ func (m *OnlineMeetingBase) GetFieldDeserializers()(map[string]func(i878a80d2330
         }
         return nil
     }
+    res["allowCopyingAndSharingMeetingContent"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetBoolValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetAllowCopyingAndSharingMeetingContent(val)
+        }
+        return nil
+    }
     res["allowedLobbyAdmitters"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetEnumValue(ParseAllowedLobbyAdmitterRoles)
         if err != nil {
@@ -426,6 +448,16 @@ func (m *OnlineMeetingBase) GetFieldDeserializers()(map[string]func(i878a80d2330
         }
         return nil
     }
+    res["isEndToEndEncryptionEnabled"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetBoolValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetIsEndToEndEncryptionEnabled(val)
+        }
+        return nil
+    }
     res["isEntryExitAnnounced"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetBoolValue()
         if err != nil {
@@ -527,6 +559,18 @@ func (m *OnlineMeetingBase) GetFieldDeserializers()(map[string]func(i878a80d2330
         return nil
     }
     return res
+}
+// GetIsEndToEndEncryptionEnabled gets the isEndToEndEncryptionEnabled property value. Indicates whether end-to-end encryption (E2EE) is enabled for the online meeting.
+// returns a *bool when successful
+func (m *OnlineMeetingBase) GetIsEndToEndEncryptionEnabled()(*bool) {
+    val, err := m.GetBackingStore().Get("isEndToEndEncryptionEnabled")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*bool)
+    }
+    return nil
 }
 // GetIsEntryExitAnnounced gets the isEntryExitAnnounced property value. Indicates whether to announce when callers join or leave.
 // returns a *bool when successful
@@ -672,6 +716,12 @@ func (m *OnlineMeetingBase) Serialize(writer i878a80d2330e89d26896388a3f487eef27
             return err
         }
     }
+    {
+        err = writer.WriteBoolValue("allowCopyingAndSharingMeetingContent", m.GetAllowCopyingAndSharingMeetingContent())
+        if err != nil {
+            return err
+        }
+    }
     if m.GetAllowedLobbyAdmitters() != nil {
         cast := (*m.GetAllowedLobbyAdmitters()).String()
         err = writer.WriteStringValue("allowedLobbyAdmitters", &cast)
@@ -767,6 +817,12 @@ func (m *OnlineMeetingBase) Serialize(writer i878a80d2330e89d26896388a3f487eef27
         }
     }
     {
+        err = writer.WriteBoolValue("isEndToEndEncryptionEnabled", m.GetIsEndToEndEncryptionEnabled())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteBoolValue("isEntryExitAnnounced", m.GetIsEntryExitAnnounced())
         if err != nil {
             return err
@@ -850,6 +906,13 @@ func (m *OnlineMeetingBase) SetAllowBreakoutRooms(value *bool)() {
         panic(err)
     }
 }
+// SetAllowCopyingAndSharingMeetingContent sets the allowCopyingAndSharingMeetingContent property value. Indicates whether the ability to copy and share meeting content is enabled for the meeting.
+func (m *OnlineMeetingBase) SetAllowCopyingAndSharingMeetingContent(value *bool)() {
+    err := m.GetBackingStore().Set("allowCopyingAndSharingMeetingContent", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetAllowedLobbyAdmitters sets the allowedLobbyAdmitters property value. Specifies the users who can admit from the lobby. Possible values are: organizerAndCoOrganizersAndPresenters, organizerAndCoOrganizers, unknownFutureValue.
 func (m *OnlineMeetingBase) SetAllowedLobbyAdmitters(value *AllowedLobbyAdmitterRoles)() {
     err := m.GetBackingStore().Set("allowedLobbyAdmitters", value)
@@ -857,7 +920,7 @@ func (m *OnlineMeetingBase) SetAllowedLobbyAdmitters(value *AllowedLobbyAdmitter
         panic(err)
     }
 }
-// SetAllowedPresenters sets the allowedPresenters property value. Specifies who can be a presenter in a meeting.
+// SetAllowedPresenters sets the allowedPresenters property value. Specifies who can be a presenter in a meeting. Possible values are: everyone, organization, roleIsPresenter, organizer, unknownFutureValue. Inherited from onlineMeetingBase.
 func (m *OnlineMeetingBase) SetAllowedPresenters(value *OnlineMeetingPresenters)() {
     err := m.GetBackingStore().Set("allowedPresenters", value)
     if err != nil {
@@ -948,6 +1011,13 @@ func (m *OnlineMeetingBase) SetChatRestrictions(value ChatRestrictionsable)() {
         panic(err)
     }
 }
+// SetIsEndToEndEncryptionEnabled sets the isEndToEndEncryptionEnabled property value. Indicates whether end-to-end encryption (E2EE) is enabled for the online meeting.
+func (m *OnlineMeetingBase) SetIsEndToEndEncryptionEnabled(value *bool)() {
+    err := m.GetBackingStore().Set("isEndToEndEncryptionEnabled", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetIsEntryExitAnnounced sets the isEntryExitAnnounced property value. Indicates whether to announce when callers join or leave.
 func (m *OnlineMeetingBase) SetIsEntryExitAnnounced(value *bool)() {
     err := m.GetBackingStore().Set("isEntryExitAnnounced", value)
@@ -1024,6 +1094,7 @@ type OnlineMeetingBaseable interface {
     GetAllowAttendeeToEnableCamera()(*bool)
     GetAllowAttendeeToEnableMic()(*bool)
     GetAllowBreakoutRooms()(*bool)
+    GetAllowCopyingAndSharingMeetingContent()(*bool)
     GetAllowedLobbyAdmitters()(*AllowedLobbyAdmitterRoles)
     GetAllowedPresenters()(*OnlineMeetingPresenters)
     GetAllowLiveShare()(*MeetingLiveShareOptions)
@@ -1038,6 +1109,7 @@ type OnlineMeetingBaseable interface {
     GetAudioConferencing()(AudioConferencingable)
     GetChatInfo()(ChatInfoable)
     GetChatRestrictions()(ChatRestrictionsable)
+    GetIsEndToEndEncryptionEnabled()(*bool)
     GetIsEntryExitAnnounced()(*bool)
     GetJoinInformation()(ItemBodyable)
     GetJoinMeetingIdSettings()(JoinMeetingIdSettingsable)
@@ -1051,6 +1123,7 @@ type OnlineMeetingBaseable interface {
     SetAllowAttendeeToEnableCamera(value *bool)()
     SetAllowAttendeeToEnableMic(value *bool)()
     SetAllowBreakoutRooms(value *bool)()
+    SetAllowCopyingAndSharingMeetingContent(value *bool)()
     SetAllowedLobbyAdmitters(value *AllowedLobbyAdmitterRoles)()
     SetAllowedPresenters(value *OnlineMeetingPresenters)()
     SetAllowLiveShare(value *MeetingLiveShareOptions)()
@@ -1065,6 +1138,7 @@ type OnlineMeetingBaseable interface {
     SetAudioConferencing(value AudioConferencingable)()
     SetChatInfo(value ChatInfoable)()
     SetChatRestrictions(value ChatRestrictionsable)()
+    SetIsEndToEndEncryptionEnabled(value *bool)()
     SetIsEntryExitAnnounced(value *bool)()
     SetJoinInformation(value ItemBodyable)()
     SetJoinMeetingIdSettings(value JoinMeetingIdSettingsable)()
