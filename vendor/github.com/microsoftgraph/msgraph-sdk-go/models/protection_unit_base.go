@@ -45,7 +45,7 @@ func CreateProtectionUnitBaseFromDiscriminatorValue(parseNode i878a80d2330e89d26
     }
     return NewProtectionUnitBase(), nil
 }
-// GetCreatedBy gets the createdBy property value. The identity of person who created the protection unit.
+// GetCreatedBy gets the createdBy property value. The identity of the person who created the protection unit.
 // returns a IdentitySetable when successful
 func (m *ProtectionUnitBase) GetCreatedBy()(IdentitySetable) {
     val, err := m.GetBackingStore().Get("createdBy")
@@ -57,7 +57,7 @@ func (m *ProtectionUnitBase) GetCreatedBy()(IdentitySetable) {
     }
     return nil
 }
-// GetCreatedDateTime gets the createdDateTime property value. The time of creation of the protection unit.
+// GetCreatedDateTime gets the createdDateTime property value. The time of creation of the protection unit. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
 // returns a *Time when successful
 func (m *ProtectionUnitBase) GetCreatedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time) {
     val, err := m.GetBackingStore().Get("createdDateTime")
@@ -135,6 +135,16 @@ func (m *ProtectionUnitBase) GetFieldDeserializers()(map[string]func(i878a80d233
         }
         return nil
     }
+    res["offboardRequestedDateTime"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetTimeValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetOffboardRequestedDateTime(val)
+        }
+        return nil
+    }
     res["policyId"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetStringValue()
         if err != nil {
@@ -142,6 +152,16 @@ func (m *ProtectionUnitBase) GetFieldDeserializers()(map[string]func(i878a80d233
         }
         if val != nil {
             m.SetPolicyId(val)
+        }
+        return nil
+    }
+    res["protectionSources"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetEnumValue(ParseProtectionSource)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetProtectionSources(val.(*ProtectionSource))
         }
         return nil
     }
@@ -169,10 +189,22 @@ func (m *ProtectionUnitBase) GetLastModifiedBy()(IdentitySetable) {
     }
     return nil
 }
-// GetLastModifiedDateTime gets the lastModifiedDateTime property value. Timestamp of the last modification of this protection unit.
+// GetLastModifiedDateTime gets the lastModifiedDateTime property value. Timestamp of the last modification of this protection unit. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
 // returns a *Time when successful
 func (m *ProtectionUnitBase) GetLastModifiedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time) {
     val, err := m.GetBackingStore().Get("lastModifiedDateTime")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
+    }
+    return nil
+}
+// GetOffboardRequestedDateTime gets the offboardRequestedDateTime property value. The date and time when protection unit offboard was requested. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+// returns a *Time when successful
+func (m *ProtectionUnitBase) GetOffboardRequestedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time) {
+    val, err := m.GetBackingStore().Get("offboardRequestedDateTime")
     if err != nil {
         panic(err)
     }
@@ -193,7 +225,19 @@ func (m *ProtectionUnitBase) GetPolicyId()(*string) {
     }
     return nil
 }
-// GetStatus gets the status property value. The status of the protection unit. The possible values are: protectRequested, protected, unprotectRequested, unprotected, removeRequested, unknownFutureValue.
+// GetProtectionSources gets the protectionSources property value. The protectionSources property
+// returns a *ProtectionSource when successful
+func (m *ProtectionUnitBase) GetProtectionSources()(*ProtectionSource) {
+    val, err := m.GetBackingStore().Get("protectionSources")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*ProtectionSource)
+    }
+    return nil
+}
+// GetStatus gets the status property value. The status of the protection unit. The possible values are: protectRequested, protected, unprotectRequested, unprotected, removeRequested, unknownFutureValue, offboardRequested, offboarded, cancelOffboardRequested. Use the Prefer: include-unknown-enum-members request header to get the following values from this evolvable enum: offboardRequested, offboarded, cancelOffboardRequested.
 // returns a *ProtectionUnitStatus when successful
 func (m *ProtectionUnitBase) GetStatus()(*ProtectionUnitStatus) {
     val, err := m.GetBackingStore().Get("status")
@@ -242,7 +286,20 @@ func (m *ProtectionUnitBase) Serialize(writer i878a80d2330e89d26896388a3f487eef2
         }
     }
     {
+        err = writer.WriteTimeValue("offboardRequestedDateTime", m.GetOffboardRequestedDateTime())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteStringValue("policyId", m.GetPolicyId())
+        if err != nil {
+            return err
+        }
+    }
+    if m.GetProtectionSources() != nil {
+        cast := (*m.GetProtectionSources()).String()
+        err = writer.WriteStringValue("protectionSources", &cast)
         if err != nil {
             return err
         }
@@ -256,14 +313,14 @@ func (m *ProtectionUnitBase) Serialize(writer i878a80d2330e89d26896388a3f487eef2
     }
     return nil
 }
-// SetCreatedBy sets the createdBy property value. The identity of person who created the protection unit.
+// SetCreatedBy sets the createdBy property value. The identity of the person who created the protection unit.
 func (m *ProtectionUnitBase) SetCreatedBy(value IdentitySetable)() {
     err := m.GetBackingStore().Set("createdBy", value)
     if err != nil {
         panic(err)
     }
 }
-// SetCreatedDateTime sets the createdDateTime property value. The time of creation of the protection unit.
+// SetCreatedDateTime sets the createdDateTime property value. The time of creation of the protection unit. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
 func (m *ProtectionUnitBase) SetCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)() {
     err := m.GetBackingStore().Set("createdDateTime", value)
     if err != nil {
@@ -284,9 +341,16 @@ func (m *ProtectionUnitBase) SetLastModifiedBy(value IdentitySetable)() {
         panic(err)
     }
 }
-// SetLastModifiedDateTime sets the lastModifiedDateTime property value. Timestamp of the last modification of this protection unit.
+// SetLastModifiedDateTime sets the lastModifiedDateTime property value. Timestamp of the last modification of this protection unit. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
 func (m *ProtectionUnitBase) SetLastModifiedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)() {
     err := m.GetBackingStore().Set("lastModifiedDateTime", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetOffboardRequestedDateTime sets the offboardRequestedDateTime property value. The date and time when protection unit offboard was requested. The timestamp type represents date and time information using ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.
+func (m *ProtectionUnitBase) SetOffboardRequestedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)() {
+    err := m.GetBackingStore().Set("offboardRequestedDateTime", value)
     if err != nil {
         panic(err)
     }
@@ -298,7 +362,14 @@ func (m *ProtectionUnitBase) SetPolicyId(value *string)() {
         panic(err)
     }
 }
-// SetStatus sets the status property value. The status of the protection unit. The possible values are: protectRequested, protected, unprotectRequested, unprotected, removeRequested, unknownFutureValue.
+// SetProtectionSources sets the protectionSources property value. The protectionSources property
+func (m *ProtectionUnitBase) SetProtectionSources(value *ProtectionSource)() {
+    err := m.GetBackingStore().Set("protectionSources", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetStatus sets the status property value. The status of the protection unit. The possible values are: protectRequested, protected, unprotectRequested, unprotected, removeRequested, unknownFutureValue, offboardRequested, offboarded, cancelOffboardRequested. Use the Prefer: include-unknown-enum-members request header to get the following values from this evolvable enum: offboardRequested, offboarded, cancelOffboardRequested.
 func (m *ProtectionUnitBase) SetStatus(value *ProtectionUnitStatus)() {
     err := m.GetBackingStore().Set("status", value)
     if err != nil {
@@ -313,13 +384,17 @@ type ProtectionUnitBaseable interface {
     GetError()(PublicErrorable)
     GetLastModifiedBy()(IdentitySetable)
     GetLastModifiedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
+    GetOffboardRequestedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
     GetPolicyId()(*string)
+    GetProtectionSources()(*ProtectionSource)
     GetStatus()(*ProtectionUnitStatus)
     SetCreatedBy(value IdentitySetable)()
     SetCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
     SetError(value PublicErrorable)()
     SetLastModifiedBy(value IdentitySetable)()
     SetLastModifiedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
+    SetOffboardRequestedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
     SetPolicyId(value *string)()
+    SetProtectionSources(value *ProtectionSource)()
     SetStatus(value *ProtectionUnitStatus)()
 }
