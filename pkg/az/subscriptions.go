@@ -53,8 +53,28 @@ func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
 }
 
 func ListSubscriptions() (subscriptions []cli.Subscription) {
-	for _, t := range ListTenants() {
-		for _, s := range ListSubscriptionsForTenant(*t.TenantID) {
+	return ListSubscriptionsWithUser("")
+}
+
+func ListSubscriptionsWithUser(authenticatedUser string) (subscriptions []cli.Subscription) {
+	tenants := ListTenants()
+	log.Debugf("Found %d tenants", len(tenants))
+
+	for _, t := range tenants {
+		// Determine which user to associate with this tenant
+		userName := authenticatedUser
+		if userName == "" {
+			// Fall back to cache lookup if no authenticated user provided
+			userName = UserForTenant(*t.TenantID)
+			log.Debugf("Tenant %s: Using cached user %s", *t.TenantID, userName)
+		} else {
+			log.Debugf("Tenant %s: Using authenticated user %s", *t.TenantID, userName)
+		}
+
+		tenantSubs := ListSubscriptionsForTenantWithUser(*t.TenantID, userName)
+		log.Debugf("Tenant %s: Found %d subscriptions", *t.TenantID, len(tenantSubs))
+
+		for _, s := range tenantSubs {
 			subscriptions = append(subscriptions, cli.Subscription{
 				EnvironmentName: "AzureCloud",
 				ID:              *s.SubscriptionID,
@@ -63,7 +83,7 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 				State:           string(*s.State),
 				TenantID:        *t.TenantID,
 				User: &cli.User{
-					Name: UserForTenant(*t.TenantID),
+					Name: userName,
 					Type: "user",
 				},
 			})
@@ -78,7 +98,7 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 				State:           "Enabled",
 				TenantID:        *t.TenantID,
 				User: &cli.User{
-					Name: UserForTenant(*t.TenantID),
+					Name: userName,
 					Type: "user",
 				},
 			})
@@ -88,7 +108,14 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 }
 
 func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription.Subscription) {
-	client, err := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
+	return ListSubscriptionsForTenantWithUser(tenant, "")
+}
+
+func ListSubscriptionsForTenantWithUser(tenant, preferredUsername string) (subscriptions []*armsubscription.Subscription) {
+	client, err := armsubscription.NewSubscriptionsClient(TokenCredential{
+		TenantID:          tenant,
+		PreferredUsername: preferredUsername,
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

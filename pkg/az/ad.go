@@ -13,9 +13,11 @@ import (
 func GetSignedInUser(ctx context.Context, tenant string) graphrbac.User {
 	cclient := graphrbac.NewSignedInUserClient(tenant)
 	cclient.Authorizer = GetAuthorizer(ctx, TokenOptions{
-		policy.TokenRequestOptions{Scopes: []string{azure.PublicCloud.GraphEndpoint + "/.default"}},
-		AZ_CLIENT_ID,
-		tenant,
+		TokenRequestOptions: policy.TokenRequestOptions{Scopes: []string{azure.PublicCloud.GraphEndpoint + "/.default"}},
+		ClientID:            AZ_CLIENT_ID,
+		TenantID:            tenant,
+		ForceInteractive:    false,
+		PreferredUsername:   "",
 	})
 	u, err := cclient.Get(ctx)
 	if err != nil {
