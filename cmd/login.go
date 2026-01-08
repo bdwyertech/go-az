@@ -36,12 +36,12 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
-		opts := az.AccessTokenOptions{
-			Tenant:           viper.GetString("tenant"),
-			ForceInteractive: viper.GetBool("interactive"),
-		}
+		opts := new(az.TokenOptions)
+		opts.ForceInteractive = viper.GetBool("interactive")
+		opts.TokenRequestOptions.TenantID = viper.GetString("tenant")
+
 		if scope := viper.GetString("scope"); scope != "" {
-			opts.Scope = append(opts.Scope, scope)
+			opts.Scopes = append(opts.Scopes, scope)
 		}
 
 		token, err := az.GetAccessToken(cmd.Context(), opts)

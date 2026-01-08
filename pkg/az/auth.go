@@ -33,10 +33,9 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	// if options.TenantID == "" && c.TenantID != "" {
 	// 	options.TenantID = c.TenantID
 	// }
-	token, err := GetToken(ctx, TokenOptions{
+	token, err := GetToken(ctx, &TokenOptions{
 		TokenRequestOptions: options,
 		ClientID:            c.ClientID,
-		TenantID:            c.TenantID,
 		ForceInteractive:    false,
 		PreferredUsername:   c.PreferredUsername,
 	})
@@ -52,13 +51,13 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 
 type TokenOptions struct {
 	policy.TokenRequestOptions
-	ClientID, TenantID string
-	ForceInteractive   bool
-	PreferredUsername  string // Hint for which account to prefer when multiple accounts are cached
+	ClientID, SubscriptionID, Resource, ResourceType string
+	ForceInteractive                                 bool   // if true, ignore cache and force an interactive login
+	PreferredUsername                                string // Hint for which account to prefer when multiple accounts are cached
 }
 
 // GetToken requests an access token for the specified set of scopes.
-func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
+func GetToken(ctx context.Context, options *TokenOptions) (token public.AuthResult, err error) {
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
@@ -191,7 +190,7 @@ func getFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAuthorizer {
+func GetAuthorizer(ctx context.Context, options *TokenOptions) *autorest.BearerAuthorizer {
 	token, err := GetToken(ctx, options)
 	if err != nil {
 		log.Fatal(err)
@@ -228,32 +227,12 @@ type AccessToken struct {
 	Username     string `json:"-"` // Don't include in JSON output, internal use only
 }
 
-type AccessTokenOptions struct {
-	SubscriptionID   string
-	Resource         string
-	ResourceType     string
-	Scope            []string
-	Tenant           string
-	Client           string
-	ForceInteractive bool // if true, ignore cache and force an interactive login
-}
-
-func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {
-	popts := policy.TokenRequestOptions{
-		Scopes: opts.Scope,
-		// TenantID: opts.Tenant,
-	}
+func GetAccessToken(ctx context.Context, opts *TokenOptions) (token AccessToken, err error) {
 	if opts.Resource != "" {
-		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
+		opts.Scopes = append(opts.Scopes, opts.Resource+"/.default")
 	}
 
-	t, err := GetToken(ctx, TokenOptions{
-		TokenRequestOptions: popts,
-		ClientID:            opts.Client,
-		TenantID:            opts.Tenant,
-		ForceInteractive:    opts.ForceInteractive,
-		PreferredUsername:   "",
-	})
+	t, err := GetToken(ctx, opts)
 	if err != nil {
 		return
 	}

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 )
 
 type kubeExecCredential struct {
@@ -22,7 +20,7 @@ type kubeExecCredential struct {
 	} `json:"status"`
 }
 
-func GetKubeCred(ctx context.Context, opts AccessTokenOptions) (token kubeExecCredential, err error) {
+func GetKubeCred(ctx context.Context, opts *TokenOptions) (token kubeExecCredential, err error) {
 	const (
 		apiV1      string = "client.authentication.k8s.io/v1"
 		apiV1beta1 string = "client.authentication.k8s.io/v1beta1"
@@ -41,20 +39,11 @@ func GetKubeCred(ctx context.Context, opts AccessTokenOptions) (token kubeExecCr
 		return token, fmt.Errorf("api version: %s is not supported", token.APIVersion)
 	}
 
-	popts := policy.TokenRequestOptions{
-		Scopes: opts.Scope,
-	}
 	if opts.Resource != "" {
-		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
+		opts.Scopes = append(opts.Scopes, opts.Resource+"/.default")
 	}
 
-	t, err := GetToken(ctx, TokenOptions{
-		TokenRequestOptions: popts,
-		ClientID:            opts.Client,
-		TenantID:            opts.Tenant,
-		ForceInteractive:    false,
-		PreferredUsername:   "",
-	})
+	t, err := GetToken(ctx, opts)
 	if err != nil {
 		return
 	}
