@@ -26,19 +26,22 @@ func init() {
 	kubeCredCmd.Flags().StringSliceP("scope", "", []string{}, "Space-separated AAD scopes in AAD v2.0. Default to Azure Resource Manager.")
 	kubeCredCmd.Flags().StringP("tenant", "t", "", "Tenant ID for which the token is acquired. Only available for user and service principal account, not for MSI or Cloud Shell account.")
 	kubeCredCmd.Flags().StringP("client", "c", "", "Client Application ID for which the token is acquired.")
+	kubeCredCmd.Flags().StringP("preferred-username", "u", "", "Preferred Username for which the token is acquired.")
 }
 
 var kubeCredCmd = &cobra.Command{
 	Use:   "kube-cred",
 	Short: "Get a token for accessing Kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := az.GetKubeCred(cmd.Context(), az.AccessTokenOptions{
-			Resource:       viper.GetString("resource"),
-			Scope:          viper.GetStringSlice("scope"),
-			SubscriptionID: viper.GetString("subscription"),
-			Tenant:         viper.GetString("tenant"),
-			Client:         viper.GetString("client"),
-		})
+		opts := &az.TokenOptions{
+			Resource:          viper.GetString("resource"),
+			SubscriptionID:    viper.GetString("subscription"),
+			ClientID:          viper.GetString("client"),
+			PreferredUsername: viper.GetString("preferred-username"),
+		}
+		opts.TokenRequestOptions.Scopes = viper.GetStringSlice("scope")
+		opts.TokenRequestOptions.TenantID = viper.GetString("tenant")
+		c, err := az.GetKubeCred(cmd.Context(), opts)
 		if err != nil {
 			log.Fatal(err)
 		}

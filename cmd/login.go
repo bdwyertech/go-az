@@ -21,6 +21,7 @@ import (
 func init() {
 	loginCmd.Flags().StringP("scope", "", "", "Used in the /authorize request. It can cover only one static resource.")
 	loginCmd.Flags().StringP("tenant", "t", "", "Tenant ID for which the token is acquired. Only available for user and service principal account, not for MSI or Cloud Shell account.")
+	loginCmd.Flags().BoolP("interactive", "", false, "Force interactive login")
 	// loginCmd.Flags().BoolP("allow-no-subscriptions", "", false, "Support access tenants without subscriptions.")
 	// loginCmd.Flags().BoolP("use-device-code", "", false, "Use CLI's old authentication flow based on device code.")
 	// loginCmd.Flags().StringP("federated-token", "", "", "Federated token that can be used for OIDC token exchange.")
@@ -35,18 +36,27 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
-		opts := az.AccessTokenOptions{
-			Tenant: viper.GetString("tenant"),
-		}
+		opts := new(az.TokenOptions)
+		opts.ForceInteractive = viper.GetBool("interactive")
+		opts.TokenRequestOptions.TenantID = viper.GetString("tenant")
+
 		if scope := viper.GetString("scope"); scope != "" {
-			opts.Scope = append(opts.Scope, scope)
+			opts.Scopes = append(opts.Scopes, scope)
 		}
 
-		_, err := az.GetAccessToken(cmd.Context(), opts)
+		token, err := az.GetAccessToken(cmd.Context(), opts)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s := az.ListSubscriptionsCLI(true)
+
+		log.Debugln("Authenticated as: ", token.Username)
+
+		// Build profile with authenticated user to ensure correct user association
+		if err := az.BuildProfileWithUser(token.Username); err != nil {
+			log.Fatal(err)
+		}
+
+		s := az.ListSubscriptionsCLI(false) // false because we just built the profile
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
 			log.Fatal(err)

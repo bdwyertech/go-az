@@ -25,6 +25,7 @@ import (
 // TokenCredential represents a credential capable of providing an OAuth token.
 type TokenCredential struct {
 	ClientID, TenantID string
+	PreferredUsername  string // Hint for which account to prefer when multiple accounts are cached
 }
 
 // GetToken requests an access token for the specified set of scopes.
@@ -32,7 +33,12 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	// if options.TenantID == "" && c.TenantID != "" {
 	// 	options.TenantID = c.TenantID
 	// }
-	token, err := GetToken(ctx, TokenOptions{options, c.ClientID, c.TenantID})
+	token, err := GetToken(ctx, &TokenOptions{
+		TokenRequestOptions: options,
+		ClientID:            c.ClientID,
+		ForceInteractive:    false,
+		PreferredUsername:   c.PreferredUsername,
+	})
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
@@ -45,11 +51,13 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 
 type TokenOptions struct {
 	policy.TokenRequestOptions
-	ClientID, TenantID string
+	ClientID, SubscriptionID, Resource, ResourceType string
+	ForceInteractive                                 bool   // if true, ignore cache and force an interactive login
+	PreferredUsername                                string // Hint for which account to prefer when multiple accounts are cached
 }
 
 // GetToken requests an access token for the specified set of scopes.
-func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
+func GetToken(ctx context.Context, options *TokenOptions) (token public.AuthResult, err error) {
 	// Authority
 	// https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority
 	// Work & School Accounts - login.microsoftonline.com/organizations/
@@ -79,28 +87,57 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 			azure.PublicCloud.ServiceManagementEndpoint + "/.default", // https://management.core.windows.net//.default
 		}
 	}
-	opts := []public.AcquireSilentOption{}
-	if cachedAccounts, err := pubClient.Accounts(ctx); err == nil && len(cachedAccounts) > 0 {
-		var selected *public.Account
-		for _, a := range cachedAccounts {
-			if a.Realm == options.TenantID {
-				selected = &a
-				break
+
+	// Only attempt silent authentication if ForceInteractive is false
+	// When ForceInteractive is true, skip cache entirely and go straight to interactive login
+	if !options.ForceInteractive {
+		opts := []public.AcquireSilentOption{}
+		if cachedAccounts, err := pubClient.Accounts(ctx); err == nil && len(cachedAccounts) > 0 {
+			log.Debugf("Found %d cached accounts for tenant %s", len(cachedAccounts), options.TenantID)
+
+			// Select account with priority: PreferredUsername > Realm match > First account
+			var selected *public.Account
+			for i, a := range cachedAccounts {
+				log.Debugf("  Account: %s (realm: %s)", a.PreferredUsername, a.Realm)
+
+				// Priority 1: Exact PreferredUsername match
+				if options.PreferredUsername != "" && a.PreferredUsername == options.PreferredUsername {
+					selected = &cachedAccounts[i]
+					log.Debugf("  -> Selected (PreferredUsername match)")
+					break
+				}
+
+				// Priority 2: Realm (tenant) match
+				if selected == nil && a.Realm == options.TenantID {
+					selected = &cachedAccounts[i]
+					log.Debugf("  -> Selected (realm match)")
+					// Continue loop in case PreferredUsername match found
+				}
 			}
-		}
 
-		if selected == nil {
-			selected = &cachedAccounts[0]
-		}
+			// Priority 3: First account
+			if selected == nil {
+				selected = &cachedAccounts[0]
+				log.Debugf("  -> Selected first account: %s", selected.PreferredUsername)
+			}
 
-		opts = append(opts, public.WithSilentAccount(*selected))
+			opts = append(opts, public.WithSilentAccount(*selected))
+		}
+		opts = append(opts, public.WithTenantID(options.TenantID))
+		// We need to try to AcquireTokenSilent again because another process holding the lock may have returned successfully
+		if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
+			log.Debugf("Silent token acquisition succeeded for %s", token.Account.PreferredUsername)
+			return
+		}
+		log.Debugf("Silent token acquisition failed: %v", err)
 	}
-	opts = append(opts, public.WithTenantID(options.TenantID))
-	// We need to try to AcquireTokenSilent again because another process holding the lock may have returned successfully
-	if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
-		return
-	} else if !credCache.locked {
-		log.Debugln("Silent token aquisition failed, proceeding to Interactive:", err.Error())
+
+	if !credCache.locked {
+		if err != nil {
+			log.Debugln("Silent token acquisition failed, proceeding to Interactive:", err.Error())
+		} else {
+			log.Debugln("Silent token aquisition disabled, proceeding to Interactive")
+		}
 		// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
 		f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
 		log.Debugln("Acquiring interactive lock")
@@ -153,7 +190,7 @@ func getFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAuthorizer {
+func GetAuthorizer(ctx context.Context, options *TokenOptions) *autorest.BearerAuthorizer {
 	token, err := GetToken(ctx, options)
 	if err != nil {
 		log.Fatal(err)
@@ -187,27 +224,15 @@ type AccessToken struct {
 	Subscription string `json:"subscription,omitempty"`
 	Tenant       string `json:"tenant"`
 	TokenType    string `json:"tokenType"`
+	Username     string `json:"-"` // Don't include in JSON output, internal use only
 }
 
-type AccessTokenOptions struct {
-	SubscriptionID string
-	Resource       string
-	ResourceType   string
-	Scope          []string
-	Tenant         string
-	Client         string
-}
-
-func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {
-	popts := policy.TokenRequestOptions{
-		Scopes: opts.Scope,
-		// TenantID: opts.Tenant,
-	}
+func GetAccessToken(ctx context.Context, opts *TokenOptions) (token AccessToken, err error) {
 	if opts.Resource != "" {
-		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
+		opts.Scopes = append(opts.Scopes, opts.Resource+"/.default")
 	}
 
-	t, err := GetToken(ctx, TokenOptions{popts, opts.Client, opts.Tenant})
+	t, err := GetToken(ctx, opts)
 	if err != nil {
 		return
 	}
@@ -217,6 +242,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 		Subscription: opts.SubscriptionID,
 		Tenant:       t.IDToken.TenantID,
 		TokenType:    "Bearer",
+		Username:     t.Account.PreferredUsername, // Capture authenticated username
 	}
 	return
 }

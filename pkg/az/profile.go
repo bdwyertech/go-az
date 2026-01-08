@@ -10,6 +10,10 @@ import (
 )
 
 func BuildProfile() error {
+	return BuildProfileWithUser("")
+}
+
+func BuildProfileWithUser(authenticatedUser string) error {
 	f, err := cli.ProfilePath()
 	if err != nil {
 		return err
@@ -27,7 +31,32 @@ func BuildProfile() error {
 	if p.InstallationID == "" {
 		p.InstallationID = uuid.NewString()
 	}
-	p.Subscriptions = ListSubscriptions()
+	currentSubs := p.Subscriptions
+	newSubs := ListSubscriptionsWithUser(authenticatedUser)
+
+	// Use a map to track unique subscriptions and prevent duplicates
+	// Key: subscription ID, Value: subscription object
+	subMap := make(map[string]cli.Subscription)
+
+	// First, add all new subscriptions to the map
+	for _, sub := range newSubs {
+		fmt.Println("Found subscription:", sub.Name)
+		subMap[sub.ID] = sub
+	}
+
+	// Then, add current subscriptions only if they don't already exist
+	// This preserves subscriptions from other accounts while preventing duplicates
+	for _, currentSub := range currentSubs {
+		if _, exists := subMap[currentSub.ID]; !exists {
+			subMap[currentSub.ID] = currentSub
+		}
+	}
+
+	// Convert map back to slice
+	p.Subscriptions = make([]cli.Subscription, 0, len(subMap))
+	for _, sub := range subMap {
+		p.Subscriptions = append(p.Subscriptions, sub)
+	}
 
 	if defaultSub != "" {
 		for i, s := range p.Subscriptions {

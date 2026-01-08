@@ -26,6 +26,8 @@ func init() {
 	accountGetAccessTokenCmd.Flags().StringSliceP("scope", "", []string{}, "Space-separated AAD scopes in AAD v2.0. Default to Azure Resource Manager.")
 	accountGetAccessTokenCmd.Flags().StringP("tenant", "t", "", "Tenant ID for which the token is acquired. Only available for user and service principal account, not for MSI or Cloud Shell account.")
 	accountGetAccessTokenCmd.Flags().StringP("client", "c", "", "Client Application ID for which the token is acquired.")
+	accountGetAccessTokenCmd.Flags().StringP("preferred-username", "u", "", "Preferred Username for which the token is acquired.")
+	accountGetAccessTokenCmd.Flags().BoolP("interactive", "", false, "Force interactive login")
 
 	accountShowCmd.Flags().StringP("name", "n", "", "Name of subscription.")
 	accountShowCmd.Flags().StringP("subscription", "s", "", "ID of subscription.")
@@ -102,13 +104,16 @@ var accountGetAccessTokenCmd = &cobra.Command{
 	Use:   "get-access-token",
 	Short: "Get a token for utilities to access Azure.",
 	Run: func(cmd *cobra.Command, args []string) {
-		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
-			Resource:       viper.GetString("resource"),
-			Scope:          viper.GetStringSlice("scope"),
-			SubscriptionID: viper.GetString("subscription"),
-			Tenant:         viper.GetString("tenant"),
-			Client:         viper.GetString("client"),
-		})
+		opts := &az.TokenOptions{
+			Resource:          viper.GetString("resource"),
+			SubscriptionID:    viper.GetString("subscription"),
+			ClientID:          viper.GetString("client"),
+			PreferredUsername: viper.GetString("preferred-username"),
+			ForceInteractive:  viper.GetBool("interactive"),
+		}
+		opts.TokenRequestOptions.Scopes = viper.GetStringSlice("scope")
+		opts.TokenRequestOptions.TenantID = viper.GetString("tenant")
+		u, err := az.GetAccessToken(cmd.Context(), opts)
 		if err != nil {
 			log.Fatal(err)
 		}
