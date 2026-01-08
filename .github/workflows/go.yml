@@ -5,7 +5,7 @@ jobs:
     name: Test
     strategy:
       matrix:
-        go: ['1.24']
+        go: ['1.25']
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,12 +52,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: true
 
       - name: Git Info
         id: git
         run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
           echo "SOURCE_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
           echo "SOURCE_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
           echo "SOURCE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
