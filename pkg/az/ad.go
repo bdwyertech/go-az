@@ -7,13 +7,12 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
-	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 func GetSignedInUser(ctx context.Context, tenant string) graphrbac.User {
 	cclient := graphrbac.NewSignedInUserClient(tenant)
 	cclient.Authorizer = GetAuthorizer(ctx, TokenOptions{
-		policy.TokenRequestOptions{Scopes: []string{azure.PublicCloud.GraphEndpoint + "/.default"}},
+		policy.TokenRequestOptions{Scopes: []string{graphrbac.DefaultBaseURI + "/.default"}},
 		AZ_CLIENT_ID,
 		tenant,
 	})
