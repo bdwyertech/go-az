@@ -679,6 +679,12 @@ func CreateEntityFromDiscriminatorValue(parseNode i878a80d2330e89d26896388a3f487
                         return NewEventMessageRequest(), nil
                     case "#microsoft.graph.eventMessageResponse":
                         return NewEventMessageResponse(), nil
+                    case "#microsoft.graph.exchangeAdmin":
+                        return NewExchangeAdmin(), nil
+                    case "#microsoft.graph.exchangeMessageTrace":
+                        return NewExchangeMessageTrace(), nil
+                    case "#microsoft.graph.exchangeMessageTraceDetail":
+                        return NewExchangeMessageTraceDetail(), nil
                     case "#microsoft.graph.exchangeProtectionPolicy":
                         return NewExchangeProtectionPolicy(), nil
                     case "#microsoft.graph.exchangeRestoreSession":
@@ -687,6 +693,10 @@ func CreateEntityFromDiscriminatorValue(parseNode i878a80d2330e89d26896388a3f487
                         return NewExtension(), nil
                     case "#microsoft.graph.extensionProperty":
                         return NewExtensionProperty(), nil
+                    case "#microsoft.graph.externalAuthenticationMethod":
+                        return NewExternalAuthenticationMethod(), nil
+                    case "#microsoft.graph.externalAuthenticationMethodConfiguration":
+                        return NewExternalAuthenticationMethodConfiguration(), nil
                     case "#microsoft.graph.externalDomainName":
                         return NewExternalDomainName(), nil
                     case "#microsoft.graph.externalUsersSelfServiceSignUpEventsFlow":
@@ -963,6 +973,8 @@ func CreateEntityFromDiscriminatorValue(parseNode i878a80d2330e89d26896388a3f487
                         return NewMessage(), nil
                     case "#microsoft.graph.messageRule":
                         return NewMessageRule(), nil
+                    case "#microsoft.graph.messageTracingRoot":
+                        return NewMessageTracingRoot(), nil
                     case "#microsoft.graph.microsoftAccountUserConversationMember":
                         return NewMicrosoftAccountUserConversationMember(), nil
                     case "#microsoft.graph.microsoftAuthenticatorAuthenticationMethod":
@@ -1019,6 +1031,8 @@ func CreateEntityFromDiscriminatorValue(parseNode i878a80d2330e89d26896388a3f487
                         return NewOfferShiftRequest(), nil
                     case "#microsoft.graph.officeGraphInsights":
                         return NewOfficeGraphInsights(), nil
+                    case "#microsoft.graph.oidcIdentityProvider":
+                        return NewOidcIdentityProvider(), nil
                     case "#microsoft.graph.onAttributeCollectionListener":
                         return NewOnAttributeCollectionListener(), nil
                     case "#microsoft.graph.onAttributeCollectionStartCustomExtension":
