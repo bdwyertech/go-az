@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/subscription/armsubscription"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 )
@@ -87,8 +87,8 @@ func ListSubscriptions() (subscriptions []cli.Subscription) {
 	return
 }
 
-func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription.Subscription) {
-	client, err := armsubscription.NewSubscriptionsClient(TokenCredential{TenantID: tenant}, nil)
+func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscriptions.Subscription) {
+	client, err := armsubscriptions.NewClient(TokenCredential{TenantID: tenant}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription
 		for _, sub := range nextResult.Value {
 			if sub.State != nil {
 				switch *sub.State {
-				case armsubscription.SubscriptionStateDisabled, armsubscription.SubscriptionStateDeleted:
+				case armsubscriptions.SubscriptionStateDisabled, armsubscriptions.SubscriptionStateDeleted:
 					continue // Skip disabled or deleted subscriptions
 				default:
 					subscriptions = append(subscriptions, sub)
@@ -114,8 +114,8 @@ func ListSubscriptionsForTenant(tenant string) (subscriptions []*armsubscription
 	return
 }
 
-func ListTenants() (tenants []*armsubscription.TenantIDDescription) {
-	client, err := armsubscription.NewTenantsClient(TokenCredential{}, nil)
+func ListTenants() (tenants []*armsubscriptions.TenantIDDescription) {
+	client, err := armsubscriptions.NewTenantsClient(TokenCredential{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
