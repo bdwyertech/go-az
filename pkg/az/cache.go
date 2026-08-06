@@ -8,46 +8,73 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
-	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
 )
 
 var credCache *Cache
 
 func init() {
-	cpath := cachePath()
-	credCache = &Cache{
-		path:  cpath,
-		mutex: flock.New(cpath + ".lock"),
-	}
+	credCache = &Cache{path: cachePath()}
 }
 
-func cacheDir() (d string) {
-	home, err := homedir.Dir()
-	if err != nil {
-		log.Fatal(err)
+// credDirOverride, when non-empty, replaces the default ~/.azure credential
+// directory. Tests point this at a per-spec temporary directory so no spec
+// ever touches the real user credential store.
+var credDirOverride string
+
+func cacheDir() (string, error) {
+	d := credDirOverride
+	if d == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			return "", err
+		}
+		d = filepath.Join(home, ".azure")
 	}
-	d = filepath.Join(home, ".azure")
-	if _, err = os.Stat(d); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(d, 0750)
+	if err := os.MkdirAll(d, credDirMode); err != nil {
+		return "", err
 	}
-	return
+	// MkdirAll honours the umask; force the mode so credentials stay private.
+	if err := os.Chmod(d, credDirMode); err != nil {
+		return "", err
+	}
+	return d, nil
 }
+
+// credDirMode and credFileMode keep the credential directory and its contents
+// readable only by the owning user.
+const (
+	credDirMode  = os.FileMode(0700)
+	credFileMode = os.FileMode(0600)
+)
 
 func cachePath() string {
-	return filepath.Join(cacheDir(), "go_msal_token_cache.json")
+	d, err := cacheDir()
+	if err != nil {
+		log.Error(err)
+		return ""
+	}
+	return filepath.Join(d, "go_msal_token_cache.json")
 }
 
+// Cache is the MSAL token cache accessor. All exported state is guarded: mu
+// serializes goroutines within this process, and an advisory file lock
+// serializes this process against other tools sharing the same file. The Cache
+// deliberately exposes no field a caller can mutate to influence control flow.
 type Cache struct {
-	path   string
-	mutex  *flock.Flock
-	locked bool
-	bytes  []byte
+	path string
+
+	mu    sync.Mutex
+	bytes []byte
 }
+
+// lockPath returns the advisory lock file guarding the token cache.
+func (c *Cache) lockPath() string { return c.path + ".lock" }
 
 func (c *Cache) Export(ctx context.Context, m cache.Marshaler, k cache.ExportHints) error {
 	jsonBytes, err := m.Marshal()
@@ -56,38 +83,51 @@ func (c *Cache) Export(ctx context.Context, m cache.Marshaler, k cache.ExportHin
 		return nil
 	}
 	b := new(bytes.Buffer)
-	json.Indent(b, jsonBytes, "", "  ")
+	if err = json.Indent(b, jsonBytes, "", "  "); err != nil {
+		log.Error(err)
+		return nil
+	}
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if bytes.Equal(c.bytes, b.Bytes()) {
-		// log.Debug("cache: already up to date")
 		return nil
 	}
-	// log.Debug("cache: acquiring write lock")
-	if err = c.mutex.Lock(); err != nil {
+	err = withExclusiveLock(ctx, c.lockPath(), func() error {
+		return WriteFileAtomic(c.path, b.Bytes(), credFileMode)
+	})
+	if err != nil {
 		log.Error(err)
 		return nil
 	}
-	// log.Debug("cache: write lock acquired")
-	defer c.mutex.Unlock()
-	if err = os.WriteFile(c.path, b.Bytes(), os.ModePerm); err != nil {
-		log.Error(err)
-	}
+	c.bytes = b.Bytes()
 	return nil
 }
 
 func (c *Cache) Replace(ctx context.Context, u cache.Unmarshaler, k cache.ReplaceHints) error {
-	// log.Debug("cache: acquiring read lock")
-	if err := c.mutex.RLock(); err != nil {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	var raw []byte
+	err := withSharedLock(ctx, c.lockPath(), func() error {
+		b, err := os.ReadFile(c.path)
+		if errors.Is(err, os.ErrNotExist) {
+			// A missing file is an empty cache, not a failure.
+			return nil
+		}
+		raw = b
+		return err
+	})
+	if err != nil {
 		log.Error(err)
 		return nil
 	}
-	// log.Debug("cache: read lock acquired")
-	defer c.mutex.Unlock()
-	var err error
-	c.bytes, err = os.ReadFile(c.path)
-	if err != nil {
+	if len(raw) == 0 {
 		return nil
 	}
-	if err = u.Unmarshal(c.bytes); err != nil {
+	c.bytes = raw
+	if err = u.Unmarshal(raw); err != nil {
 		log.Error(err)
 	}
 	return nil

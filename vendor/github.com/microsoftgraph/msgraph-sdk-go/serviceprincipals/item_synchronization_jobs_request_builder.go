@@ -14,24 +14,24 @@ import (
 type ItemSynchronizationJobsRequestBuilder struct {
     i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.BaseRequestBuilder
 }
-// ItemSynchronizationJobsRequestBuilderGetQueryParameters list existing jobs for a given application instance (service principal).
+// ItemSynchronizationJobsRequestBuilderGetQueryParameters list existing synchronizationJob objects for a given application instance (service principal).
 type ItemSynchronizationJobsRequestBuilderGetQueryParameters struct {
     // Include count of items
-    Count *bool `uriparametername:"%24count"`
+    Count *bool "uriparametername:\"%24count\""
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Filter items by property values
-    Filter *string `uriparametername:"%24filter"`
+    Filter *string "uriparametername:\"%24filter\""
     // Order items by property values
-    Orderby []string `uriparametername:"%24orderby"`
+    Orderby []string "uriparametername:\"%24orderby\""
     // Search items by search phrases
-    Search *string `uriparametername:"%24search"`
+    Search *string "uriparametername:\"%24search\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
     // Skip the first n items
-    Skip *int32 `uriparametername:"%24skip"`
+    Skip *int32 "uriparametername:\"%24skip\""
     // Show only the first n items
-    Top *int32 `uriparametername:"%24top"`
+    Top *int32 "uriparametername:\"%24top\""
 }
 // ItemSynchronizationJobsRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemSynchronizationJobsRequestBuilderGetRequestConfiguration struct {
@@ -79,7 +79,7 @@ func NewItemSynchronizationJobsRequestBuilder(rawUrl string, requestAdapter i2ae
 func (m *ItemSynchronizationJobsRequestBuilder) Count()(*ItemSynchronizationJobsCountRequestBuilder) {
     return NewItemSynchronizationJobsCountRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
-// Get list existing jobs for a given application instance (service principal).
+// Get list existing synchronizationJob objects for a given application instance (service principal).
 // returns a SynchronizationJobCollectionResponseable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
@@ -102,7 +102,7 @@ func (m *ItemSynchronizationJobsRequestBuilder) Get(ctx context.Context, request
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SynchronizationJobCollectionResponseable), nil
 }
-// Post create new synchronization job with a default synchronization schema. The job is created in a disabled state. Call Start job to start synchronization.
+// Post create a new synchronizationJob with a default synchronization schema. The job is created in a disabled state. Call Start job to start synchronization.
 // returns a SynchronizationJobable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
@@ -125,7 +125,7 @@ func (m *ItemSynchronizationJobsRequestBuilder) Post(ctx context.Context, body i
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SynchronizationJobable), nil
 }
-// ToGetRequestInformation list existing jobs for a given application instance (service principal).
+// ToGetRequestInformation list existing synchronizationJob objects for a given application instance (service principal).
 // returns a *RequestInformation when successful
 func (m *ItemSynchronizationJobsRequestBuilder) ToGetRequestInformation(ctx context.Context, requestConfiguration *ItemSynchronizationJobsRequestBuilderGetRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.GET, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)
@@ -139,7 +139,7 @@ func (m *ItemSynchronizationJobsRequestBuilder) ToGetRequestInformation(ctx cont
     requestInfo.Headers.TryAdd("Accept", "application/json")
     return requestInfo, nil
 }
-// ToPostRequestInformation create new synchronization job with a default synchronization schema. The job is created in a disabled state. Call Start job to start synchronization.
+// ToPostRequestInformation create a new synchronizationJob with a default synchronization schema. The job is created in a disabled state. Call Start job to start synchronization.
 // returns a *RequestInformation when successful
 func (m *ItemSynchronizationJobsRequestBuilder) ToPostRequestInformation(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SynchronizationJobable, requestConfiguration *ItemSynchronizationJobsRequestBuilderPostRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.POST, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

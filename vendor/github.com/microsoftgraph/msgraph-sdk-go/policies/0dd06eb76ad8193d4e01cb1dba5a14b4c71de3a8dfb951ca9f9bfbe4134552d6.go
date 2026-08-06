@@ -24,9 +24,9 @@ type CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerT
 // CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerTenantItemRequestBuilderGetQueryParameters read the properties and relationships of a partner-specific configuration.
 type CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerTenantItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerTenantItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerTenantItemRequestBuilderGetRequestConfiguration struct {
@@ -126,6 +126,11 @@ func (m *CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPart
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.CrossTenantAccessPolicyConfigurationPartnerable), nil
+}
+// ServiceProviderConstraints provides operations to manage the serviceProviderConstraints property of the microsoft.graph.crossTenantAccessPolicyConfigurationPartner entity.
+// returns a *CrossTenantAccessPolicyPartnersItemServiceProviderConstraintsRequestBuilder when successful
+func (m *CrossTenantAccessPolicyPartnersCrossTenantAccessPolicyConfigurationPartnerTenantItemRequestBuilder) ServiceProviderConstraints()(*CrossTenantAccessPolicyPartnersItemServiceProviderConstraintsRequestBuilder) {
+    return NewCrossTenantAccessPolicyPartnersItemServiceProviderConstraintsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation delete a partner-specific configuration in a cross-tenant access policy. If a configuration includes a user synchronization policy, you must first delete the user synchronization policy before you can delete the partner-specific configuration.
 // returns a *RequestInformation when successful

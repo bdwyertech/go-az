@@ -24,9 +24,9 @@ type VirtualEndpointRequestBuilderDeleteRequestConfiguration struct {
 // VirtualEndpointRequestBuilderGetQueryParameters get virtualEndpoint from deviceManagement
 type VirtualEndpointRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // VirtualEndpointRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type VirtualEndpointRequestBuilderGetRequestConfiguration struct {
@@ -147,6 +147,11 @@ func (m *VirtualEndpointRequestBuilder) ProvisioningPolicies()(*VirtualEndpointP
 // returns a *VirtualEndpointReportRequestBuilder when successful
 func (m *VirtualEndpointRequestBuilder) Report()(*VirtualEndpointReportRequestBuilder) {
     return NewVirtualEndpointReportRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// ServicePlans provides operations to manage the servicePlans property of the microsoft.graph.virtualEndpoint entity.
+// returns a *VirtualEndpointServicePlansRequestBuilder when successful
+func (m *VirtualEndpointRequestBuilder) ServicePlans()(*VirtualEndpointServicePlansRequestBuilder) {
+    return NewVirtualEndpointServicePlansRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation delete navigation property virtualEndpoint for deviceManagement
 // returns a *RequestInformation when successful

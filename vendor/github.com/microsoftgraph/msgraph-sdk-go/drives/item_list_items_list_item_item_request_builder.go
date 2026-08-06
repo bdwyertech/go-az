@@ -24,9 +24,9 @@ type ItemListItemsListItemItemRequestBuilderDeleteRequestConfiguration struct {
 // ItemListItemsListItemItemRequestBuilderGetQueryParameters all items contained in the list.
 type ItemListItemsListItemItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemListItemsListItemItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemListItemsListItemItemRequestBuilderGetRequestConfiguration struct {
@@ -157,6 +157,11 @@ func (m *ItemListItemsListItemItemRequestBuilder) Patch(ctx context.Context, bod
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.ListItemable), nil
+}
+// Permissions provides operations to manage the permissions property of the microsoft.graph.listItem entity.
+// returns a *ItemListItemsItemPermissionsRequestBuilder when successful
+func (m *ItemListItemsListItemItemRequestBuilder) Permissions()(*ItemListItemsItemPermissionsRequestBuilder) {
+    return NewItemListItemsItemPermissionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation delete navigation property items for drives
 // returns a *RequestInformation when successful

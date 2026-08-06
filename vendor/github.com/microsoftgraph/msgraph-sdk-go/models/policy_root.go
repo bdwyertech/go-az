@@ -178,6 +178,18 @@ func (m *PolicyRoot) GetFeatureRolloutPolicies()([]FeatureRolloutPolicyable) {
     }
     return nil
 }
+// GetFederatedTokenValidationPolicy gets the federatedTokenValidationPolicy property value. The federatedTokenValidationPolicy property
+// returns a FederatedTokenValidationPolicyable when successful
+func (m *PolicyRoot) GetFederatedTokenValidationPolicy()(FederatedTokenValidationPolicyable) {
+    val, err := m.GetBackingStore().Get("federatedTokenValidationPolicy")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(FederatedTokenValidationPolicyable)
+    }
+    return nil
+}
 // GetFieldDeserializers the deserialization information for the current model
 // returns a map[string]func(i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode)(error) when successful
 func (m *PolicyRoot) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode)(error)) {
@@ -348,6 +360,16 @@ func (m *PolicyRoot) GetFieldDeserializers()(map[string]func(i878a80d2330e89d268
         }
         return nil
     }
+    res["federatedTokenValidationPolicy"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetObjectValue(CreateFederatedTokenValidationPolicyFromDiscriminatorValue)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetFederatedTokenValidationPolicy(val.(FederatedTokenValidationPolicyable))
+        }
+        return nil
+    }
     res["homeRealmDiscoveryPolicies"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetCollectionOfObjectValues(CreateHomeRealmDiscoveryPolicyFromDiscriminatorValue)
         if err != nil {
@@ -371,6 +393,16 @@ func (m *PolicyRoot) GetFieldDeserializers()(map[string]func(i878a80d2330e89d268
         }
         if val != nil {
             m.SetIdentitySecurityDefaultsEnforcementPolicy(val.(IdentitySecurityDefaultsEnforcementPolicyable))
+        }
+        return nil
+    }
+    res["ownerlessGroupPolicy"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetObjectValue(CreateOwnerlessGroupPolicyFromDiscriminatorValue)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetOwnerlessGroupPolicy(val.(OwnerlessGroupPolicyable))
         }
         return nil
     }
@@ -477,6 +509,18 @@ func (m *PolicyRoot) GetIdentitySecurityDefaultsEnforcementPolicy()(IdentitySecu
     }
     if val != nil {
         return val.(IdentitySecurityDefaultsEnforcementPolicyable)
+    }
+    return nil
+}
+// GetOwnerlessGroupPolicy gets the ownerlessGroupPolicy property value. The policy configuration for managing groups that have lost their sole owner.
+// returns a OwnerlessGroupPolicyable when successful
+func (m *PolicyRoot) GetOwnerlessGroupPolicy()(OwnerlessGroupPolicyable) {
+    val, err := m.GetBackingStore().Get("ownerlessGroupPolicy")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(OwnerlessGroupPolicyable)
     }
     return nil
 }
@@ -660,6 +704,12 @@ func (m *PolicyRoot) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6c
             return err
         }
     }
+    {
+        err = writer.WriteObjectValue("federatedTokenValidationPolicy", m.GetFederatedTokenValidationPolicy())
+        if err != nil {
+            return err
+        }
+    }
     if m.GetHomeRealmDiscoveryPolicies() != nil {
         cast := make([]i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable, len(m.GetHomeRealmDiscoveryPolicies()))
         for i, v := range m.GetHomeRealmDiscoveryPolicies() {
@@ -674,6 +724,12 @@ func (m *PolicyRoot) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6c
     }
     {
         err = writer.WriteObjectValue("identitySecurityDefaultsEnforcementPolicy", m.GetIdentitySecurityDefaultsEnforcementPolicy())
+        if err != nil {
+            return err
+        }
+    }
+    {
+        err = writer.WriteObjectValue("ownerlessGroupPolicy", m.GetOwnerlessGroupPolicy())
         if err != nil {
             return err
         }
@@ -831,6 +887,13 @@ func (m *PolicyRoot) SetFeatureRolloutPolicies(value []FeatureRolloutPolicyable)
         panic(err)
     }
 }
+// SetFederatedTokenValidationPolicy sets the federatedTokenValidationPolicy property value. The federatedTokenValidationPolicy property
+func (m *PolicyRoot) SetFederatedTokenValidationPolicy(value FederatedTokenValidationPolicyable)() {
+    err := m.GetBackingStore().Set("federatedTokenValidationPolicy", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetHomeRealmDiscoveryPolicies sets the homeRealmDiscoveryPolicies property value. The policy to control Microsoft Entra authentication behavior for federated users.
 func (m *PolicyRoot) SetHomeRealmDiscoveryPolicies(value []HomeRealmDiscoveryPolicyable)() {
     err := m.GetBackingStore().Set("homeRealmDiscoveryPolicies", value)
@@ -841,6 +904,13 @@ func (m *PolicyRoot) SetHomeRealmDiscoveryPolicies(value []HomeRealmDiscoveryPol
 // SetIdentitySecurityDefaultsEnforcementPolicy sets the identitySecurityDefaultsEnforcementPolicy property value. The policy that represents the security defaults that protect against common attacks.
 func (m *PolicyRoot) SetIdentitySecurityDefaultsEnforcementPolicy(value IdentitySecurityDefaultsEnforcementPolicyable)() {
     err := m.GetBackingStore().Set("identitySecurityDefaultsEnforcementPolicy", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetOwnerlessGroupPolicy sets the ownerlessGroupPolicy property value. The policy configuration for managing groups that have lost their sole owner.
+func (m *PolicyRoot) SetOwnerlessGroupPolicy(value OwnerlessGroupPolicyable)() {
+    err := m.GetBackingStore().Set("ownerlessGroupPolicy", value)
     if err != nil {
         panic(err)
     }
@@ -896,8 +966,10 @@ type PolicyRootable interface {
     GetDefaultAppManagementPolicy()(TenantAppManagementPolicyable)
     GetDeviceRegistrationPolicy()(DeviceRegistrationPolicyable)
     GetFeatureRolloutPolicies()([]FeatureRolloutPolicyable)
+    GetFederatedTokenValidationPolicy()(FederatedTokenValidationPolicyable)
     GetHomeRealmDiscoveryPolicies()([]HomeRealmDiscoveryPolicyable)
     GetIdentitySecurityDefaultsEnforcementPolicy()(IdentitySecurityDefaultsEnforcementPolicyable)
+    GetOwnerlessGroupPolicy()(OwnerlessGroupPolicyable)
     GetPermissionGrantPolicies()([]PermissionGrantPolicyable)
     GetRoleManagementPolicies()([]UnifiedRoleManagementPolicyable)
     GetRoleManagementPolicyAssignments()([]UnifiedRoleManagementPolicyAssignmentable)
@@ -916,8 +988,10 @@ type PolicyRootable interface {
     SetDefaultAppManagementPolicy(value TenantAppManagementPolicyable)()
     SetDeviceRegistrationPolicy(value DeviceRegistrationPolicyable)()
     SetFeatureRolloutPolicies(value []FeatureRolloutPolicyable)()
+    SetFederatedTokenValidationPolicy(value FederatedTokenValidationPolicyable)()
     SetHomeRealmDiscoveryPolicies(value []HomeRealmDiscoveryPolicyable)()
     SetIdentitySecurityDefaultsEnforcementPolicy(value IdentitySecurityDefaultsEnforcementPolicyable)()
+    SetOwnerlessGroupPolicy(value OwnerlessGroupPolicyable)()
     SetPermissionGrantPolicies(value []PermissionGrantPolicyable)()
     SetRoleManagementPolicies(value []UnifiedRoleManagementPolicyable)()
     SetRoleManagementPolicyAssignments(value []UnifiedRoleManagementPolicyAssignmentable)()

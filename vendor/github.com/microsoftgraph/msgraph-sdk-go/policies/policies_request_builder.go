@@ -17,9 +17,9 @@ type PoliciesRequestBuilder struct {
 // PoliciesRequestBuilderGetQueryParameters get policies
 type PoliciesRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // PoliciesRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type PoliciesRequestBuilderGetRequestConfiguration struct {
@@ -115,6 +115,11 @@ func (m *PoliciesRequestBuilder) DeviceRegistrationPolicy()(*DeviceRegistrationP
 func (m *PoliciesRequestBuilder) FeatureRolloutPolicies()(*FeatureRolloutPoliciesRequestBuilder) {
     return NewFeatureRolloutPoliciesRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
+// FederatedTokenValidationPolicy provides operations to manage the federatedTokenValidationPolicy property of the microsoft.graph.policyRoot entity.
+// returns a *FederatedTokenValidationPolicyRequestBuilder when successful
+func (m *PoliciesRequestBuilder) FederatedTokenValidationPolicy()(*FederatedTokenValidationPolicyRequestBuilder) {
+    return NewFederatedTokenValidationPolicyRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
 // Get get policies
 // returns a PolicyRootable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
@@ -144,6 +149,11 @@ func (m *PoliciesRequestBuilder) HomeRealmDiscoveryPolicies()(*HomeRealmDiscover
 // returns a *IdentitySecurityDefaultsEnforcementPolicyRequestBuilder when successful
 func (m *PoliciesRequestBuilder) IdentitySecurityDefaultsEnforcementPolicy()(*IdentitySecurityDefaultsEnforcementPolicyRequestBuilder) {
     return NewIdentitySecurityDefaultsEnforcementPolicyRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// OwnerlessGroupPolicy provides operations to manage the ownerlessGroupPolicy property of the microsoft.graph.policyRoot entity.
+// returns a *OwnerlessGroupPolicyRequestBuilder when successful
+func (m *PoliciesRequestBuilder) OwnerlessGroupPolicy()(*OwnerlessGroupPolicyRequestBuilder) {
+    return NewOwnerlessGroupPolicyRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // Patch update policies
 // returns a PolicyRootable when successful

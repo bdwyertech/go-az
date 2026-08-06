@@ -24,9 +24,9 @@ type ItemRemoteDesktopSecurityConfigurationRequestBuilderDeleteRequestConfigurat
 // ItemRemoteDesktopSecurityConfigurationRequestBuilderGetQueryParameters read the properties and relationships of a remoteDesktopSecurityConfiguration object on a servicePrincipal. Use this configuration to view the Microsoft Entra ID Remote Desktop Services (RDS) authentication protocol to authenticate a user to Microsoft Entra joined or Microsoft Entra hybrid joined devices. Additionally you can view any targetDeviceGroups that have been configured for SSO.
 type ItemRemoteDesktopSecurityConfigurationRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemRemoteDesktopSecurityConfigurationRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemRemoteDesktopSecurityConfigurationRequestBuilderGetRequestConfiguration struct {
@@ -43,6 +43,11 @@ type ItemRemoteDesktopSecurityConfigurationRequestBuilderPatchRequestConfigurati
     Headers *i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestHeaders
     // Request options
     Options []i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestOption
+}
+// ApprovedClientApps provides operations to manage the approvedClientApps property of the microsoft.graph.remoteDesktopSecurityConfiguration entity.
+// returns a *ItemRemoteDesktopSecurityConfigurationApprovedClientAppsRequestBuilder when successful
+func (m *ItemRemoteDesktopSecurityConfigurationRequestBuilder) ApprovedClientApps()(*ItemRemoteDesktopSecurityConfigurationApprovedClientAppsRequestBuilder) {
+    return NewItemRemoteDesktopSecurityConfigurationApprovedClientAppsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // NewItemRemoteDesktopSecurityConfigurationRequestBuilderInternal instantiates a new ItemRemoteDesktopSecurityConfigurationRequestBuilder and sets the default values.
 func NewItemRemoteDesktopSecurityConfigurationRequestBuilderInternal(pathParameters map[string]string, requestAdapter i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestAdapter)(*ItemRemoteDesktopSecurityConfigurationRequestBuilder) {

@@ -17,9 +17,9 @@ type IdentityRequestBuilder struct {
 // IdentityRequestBuilderGetQueryParameters get identity
 type IdentityRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // IdentityRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type IdentityRequestBuilderGetRequestConfiguration struct {
@@ -163,6 +163,11 @@ func (m *IdentityRequestBuilder) ToPatchRequestInformation(ctx context.Context, 
 // returns a *UserFlowAttributesRequestBuilder when successful
 func (m *IdentityRequestBuilder) UserFlowAttributes()(*UserFlowAttributesRequestBuilder) {
     return NewUserFlowAttributesRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// VerifiedId provides operations to manage the verifiedId property of the microsoft.graph.identityContainer entity.
+// returns a *VerifiedIdRequestBuilder when successful
+func (m *IdentityRequestBuilder) VerifiedId()(*VerifiedIdRequestBuilder) {
+    return NewVerifiedIdRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // WithUrl returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
 // returns a *IdentityRequestBuilder when successful

@@ -24,9 +24,9 @@ type ItemListsItemItemsListItemItemRequestBuilderDeleteRequestConfiguration stru
 // ItemListsItemItemsListItemItemRequestBuilderGetQueryParameters returns the metadata for an item in a list.
 type ItemListsItemItemsListItemItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemListsItemItemsListItemItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemListsItemItemsListItemItemRequestBuilderGetRequestConfiguration struct {
@@ -163,6 +163,11 @@ func (m *ItemListsItemItemsListItemItemRequestBuilder) Patch(ctx context.Context
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.ListItemable), nil
+}
+// Permissions provides operations to manage the permissions property of the microsoft.graph.listItem entity.
+// returns a *ItemListsItemItemsItemPermissionsRequestBuilder when successful
+func (m *ItemListsItemItemsListItemItemRequestBuilder) Permissions()(*ItemListsItemItemsItemPermissionsRequestBuilder) {
+    return NewItemListsItemItemsItemPermissionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation removes an item from a list.
 // returns a *RequestInformation when successful

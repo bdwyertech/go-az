@@ -24,9 +24,9 @@ type ItemSitesItemListsItemItemsListItemItemRequestBuilderDeleteRequestConfigura
 // ItemSitesItemListsItemItemsListItemItemRequestBuilderGetQueryParameters all items contained in the list.
 type ItemSitesItemListsItemItemsListItemItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemSitesItemListsItemItemsListItemItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemSitesItemListsItemItemsListItemItemRequestBuilderGetRequestConfiguration struct {
@@ -157,6 +157,11 @@ func (m *ItemSitesItemListsItemItemsListItemItemRequestBuilder) Patch(ctx contex
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.ListItemable), nil
+}
+// Permissions provides operations to manage the permissions property of the microsoft.graph.listItem entity.
+// returns a *ItemSitesItemListsItemItemsItemPermissionsRequestBuilder when successful
+func (m *ItemSitesItemListsItemItemsListItemItemRequestBuilder) Permissions()(*ItemSitesItemListsItemItemsItemPermissionsRequestBuilder) {
+    return NewItemSitesItemListsItemItemsItemPermissionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation delete navigation property items for groups
 // returns a *RequestInformation when successful

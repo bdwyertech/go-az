@@ -58,7 +58,7 @@ func (m *CloudPcOnPremisesConnection) GetAdDomainUsername()(*string) {
     }
     return nil
 }
-// GetAlternateResourceUrl gets the alternateResourceUrl property value. The interface URL of the partner service's resource that links to this Azure network connection. Returned only on $select.
+// GetAlternateResourceUrl gets the alternateResourceUrl property value. The interface URL of the partner service's resource that links to this Azure network connection. Requires $select to retrieve.
 // returns a *string when successful
 func (m *CloudPcOnPremisesConnection) GetAlternateResourceUrl()(*string) {
     val, err := m.GetBackingStore().Get("alternateResourceUrl")
@@ -158,6 +158,16 @@ func (m *CloudPcOnPremisesConnection) GetFieldDeserializers()(map[string]func(i8
         }
         return nil
     }
+    res["healthCheckPaused"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetBoolValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetHealthCheckPaused(val)
+        }
+        return nil
+    }
     res["healthCheckStatus"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetEnumValue(ParseCloudPcOnPremisesConnectionStatus)
         if err != nil {
@@ -188,6 +198,16 @@ func (m *CloudPcOnPremisesConnection) GetFieldDeserializers()(map[string]func(i8
         }
         return nil
     }
+    res["inUseByCloudPc"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetBoolValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetInUseByCloudPc(val)
+        }
+        return nil
+    }
     res["organizationalUnit"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetStringValue()
         if err != nil {
@@ -205,6 +225,22 @@ func (m *CloudPcOnPremisesConnection) GetFieldDeserializers()(map[string]func(i8
         }
         if val != nil {
             m.SetResourceGroupId(val)
+        }
+        return nil
+    }
+    res["scopeIds"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetCollectionOfPrimitiveValues("string")
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            res := make([]string, len(val))
+            for i, v := range val {
+                if v != nil {
+                    res[i] = *(v.(*string))
+                }
+            }
+            m.SetScopeIds(res)
         }
         return nil
     }
@@ -260,6 +296,18 @@ func (m *CloudPcOnPremisesConnection) GetFieldDeserializers()(map[string]func(i8
     }
     return res
 }
+// GetHealthCheckPaused gets the healthCheckPaused property value. Indicates whether regular health checks on the network or domain configuration are paused or active. false if the regular health checks on the network or domain configuration are currently active. true if the checks are paused. If you perform a create or update operation on a onPremisesNetworkConnection resource, this value is set to false for four weeks. If you retry a health check on network or domain configuration, this value is set to false for two weeks. If the onPremisesNetworkConnection resource is attached in a provisioningPolicy or used by a Cloud PC in the past four weeks, healthCheckPaused is set to false. Read-only. Default is false.
+// returns a *bool when successful
+func (m *CloudPcOnPremisesConnection) GetHealthCheckPaused()(*bool) {
+    val, err := m.GetBackingStore().Get("healthCheckPaused")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*bool)
+    }
+    return nil
+}
 // GetHealthCheckStatus gets the healthCheckStatus property value. The healthCheckStatus property
 // returns a *CloudPcOnPremisesConnectionStatus when successful
 func (m *CloudPcOnPremisesConnection) GetHealthCheckStatus()(*CloudPcOnPremisesConnectionStatus) {
@@ -272,7 +320,7 @@ func (m *CloudPcOnPremisesConnection) GetHealthCheckStatus()(*CloudPcOnPremisesC
     }
     return nil
 }
-// GetHealthCheckStatusDetail gets the healthCheckStatusDetail property value. Indicates the results of health checks performed on the on-premises connection. Read-only. Returned only on $select. For an example that shows how to get the inUse property, see Example 2: Get the selected properties of an Azure network connection, including healthCheckStatusDetail. Read-only.
+// GetHealthCheckStatusDetail gets the healthCheckStatusDetail property value. Indicates the results of health checks performed on the on-premises connection. Read-only. Requires $select to retrieve. For an example that shows how to get the inUse property, see Example 2: Get the selected properties of an Azure network connection, including healthCheckStatusDetail. Read-only.
 // returns a CloudPcOnPremisesConnectionStatusDetailable when successful
 func (m *CloudPcOnPremisesConnection) GetHealthCheckStatusDetail()(CloudPcOnPremisesConnectionStatusDetailable) {
     val, err := m.GetBackingStore().Get("healthCheckStatusDetail")
@@ -288,6 +336,18 @@ func (m *CloudPcOnPremisesConnection) GetHealthCheckStatusDetail()(CloudPcOnPrem
 // returns a *bool when successful
 func (m *CloudPcOnPremisesConnection) GetInUse()(*bool) {
     val, err := m.GetBackingStore().Get("inUse")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*bool)
+    }
+    return nil
+}
+// GetInUseByCloudPc gets the inUseByCloudPc property value. Indicates whether a Cloud PC is using this on-premises network connection. true if at least one Cloud PC is using it. Otherwise, false. Read-only. Default is false.
+// returns a *bool when successful
+func (m *CloudPcOnPremisesConnection) GetInUseByCloudPc()(*bool) {
+    val, err := m.GetBackingStore().Get("inUseByCloudPc")
     if err != nil {
         panic(err)
     }
@@ -317,6 +377,18 @@ func (m *CloudPcOnPremisesConnection) GetResourceGroupId()(*string) {
     }
     if val != nil {
         return val.(*string)
+    }
+    return nil
+}
+// GetScopeIds gets the scopeIds property value. The scope IDs of the corresponding permission. Currently, it's the Intune scope tag ID.
+// returns a []string when successful
+func (m *CloudPcOnPremisesConnection) GetScopeIds()([]string) {
+    val, err := m.GetBackingStore().Get("scopeIds")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.([]string)
     }
     return nil
 }
@@ -423,6 +495,12 @@ func (m *CloudPcOnPremisesConnection) Serialize(writer i878a80d2330e89d26896388a
             return err
         }
     }
+    {
+        err = writer.WriteBoolValue("healthCheckPaused", m.GetHealthCheckPaused())
+        if err != nil {
+            return err
+        }
+    }
     if m.GetHealthCheckStatus() != nil {
         cast := (*m.GetHealthCheckStatus()).String()
         err = writer.WriteStringValue("healthCheckStatus", &cast)
@@ -443,6 +521,12 @@ func (m *CloudPcOnPremisesConnection) Serialize(writer i878a80d2330e89d26896388a
         }
     }
     {
+        err = writer.WriteBoolValue("inUseByCloudPc", m.GetInUseByCloudPc())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteStringValue("organizationalUnit", m.GetOrganizationalUnit())
         if err != nil {
             return err
@@ -450,6 +534,12 @@ func (m *CloudPcOnPremisesConnection) Serialize(writer i878a80d2330e89d26896388a
     }
     {
         err = writer.WriteStringValue("resourceGroupId", m.GetResourceGroupId())
+        if err != nil {
+            return err
+        }
+    }
+    if m.GetScopeIds() != nil {
+        err = writer.WriteCollectionOfStringValues("scopeIds", m.GetScopeIds())
         if err != nil {
             return err
         }
@@ -507,7 +597,7 @@ func (m *CloudPcOnPremisesConnection) SetAdDomainUsername(value *string)() {
         panic(err)
     }
 }
-// SetAlternateResourceUrl sets the alternateResourceUrl property value. The interface URL of the partner service's resource that links to this Azure network connection. Returned only on $select.
+// SetAlternateResourceUrl sets the alternateResourceUrl property value. The interface URL of the partner service's resource that links to this Azure network connection. Requires $select to retrieve.
 func (m *CloudPcOnPremisesConnection) SetAlternateResourceUrl(value *string)() {
     err := m.GetBackingStore().Set("alternateResourceUrl", value)
     if err != nil {
@@ -528,6 +618,13 @@ func (m *CloudPcOnPremisesConnection) SetDisplayName(value *string)() {
         panic(err)
     }
 }
+// SetHealthCheckPaused sets the healthCheckPaused property value. Indicates whether regular health checks on the network or domain configuration are paused or active. false if the regular health checks on the network or domain configuration are currently active. true if the checks are paused. If you perform a create or update operation on a onPremisesNetworkConnection resource, this value is set to false for four weeks. If you retry a health check on network or domain configuration, this value is set to false for two weeks. If the onPremisesNetworkConnection resource is attached in a provisioningPolicy or used by a Cloud PC in the past four weeks, healthCheckPaused is set to false. Read-only. Default is false.
+func (m *CloudPcOnPremisesConnection) SetHealthCheckPaused(value *bool)() {
+    err := m.GetBackingStore().Set("healthCheckPaused", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetHealthCheckStatus sets the healthCheckStatus property value. The healthCheckStatus property
 func (m *CloudPcOnPremisesConnection) SetHealthCheckStatus(value *CloudPcOnPremisesConnectionStatus)() {
     err := m.GetBackingStore().Set("healthCheckStatus", value)
@@ -535,7 +632,7 @@ func (m *CloudPcOnPremisesConnection) SetHealthCheckStatus(value *CloudPcOnPremi
         panic(err)
     }
 }
-// SetHealthCheckStatusDetail sets the healthCheckStatusDetail property value. Indicates the results of health checks performed on the on-premises connection. Read-only. Returned only on $select. For an example that shows how to get the inUse property, see Example 2: Get the selected properties of an Azure network connection, including healthCheckStatusDetail. Read-only.
+// SetHealthCheckStatusDetail sets the healthCheckStatusDetail property value. Indicates the results of health checks performed on the on-premises connection. Read-only. Requires $select to retrieve. For an example that shows how to get the inUse property, see Example 2: Get the selected properties of an Azure network connection, including healthCheckStatusDetail. Read-only.
 func (m *CloudPcOnPremisesConnection) SetHealthCheckStatusDetail(value CloudPcOnPremisesConnectionStatusDetailable)() {
     err := m.GetBackingStore().Set("healthCheckStatusDetail", value)
     if err != nil {
@@ -545,6 +642,13 @@ func (m *CloudPcOnPremisesConnection) SetHealthCheckStatusDetail(value CloudPcOn
 // SetInUse sets the inUse property value. When true, the Azure network connection is in use. When false, the connection isn't in use. You can't delete a connection that’s in use. Returned only on $select. For an example that shows how to get the inUse property, see Example 2: Get the selected properties of an Azure network connection, including healthCheckStatusDetail. Read-only.
 func (m *CloudPcOnPremisesConnection) SetInUse(value *bool)() {
     err := m.GetBackingStore().Set("inUse", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetInUseByCloudPc sets the inUseByCloudPc property value. Indicates whether a Cloud PC is using this on-premises network connection. true if at least one Cloud PC is using it. Otherwise, false. Read-only. Default is false.
+func (m *CloudPcOnPremisesConnection) SetInUseByCloudPc(value *bool)() {
+    err := m.GetBackingStore().Set("inUseByCloudPc", value)
     if err != nil {
         panic(err)
     }
@@ -559,6 +663,13 @@ func (m *CloudPcOnPremisesConnection) SetOrganizationalUnit(value *string)() {
 // SetResourceGroupId sets the resourceGroupId property value. The unique identifier of the target resource group used associated with the on-premises network connectivity for Cloud PCs. Required format: '/subscriptions/{subscription-id}/resourceGroups/{resourceGroupName}'
 func (m *CloudPcOnPremisesConnection) SetResourceGroupId(value *string)() {
     err := m.GetBackingStore().Set("resourceGroupId", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetScopeIds sets the scopeIds property value. The scope IDs of the corresponding permission. Currently, it's the Intune scope tag ID.
+func (m *CloudPcOnPremisesConnection) SetScopeIds(value []string)() {
+    err := m.GetBackingStore().Set("scopeIds", value)
     if err != nil {
         panic(err)
     }
@@ -607,11 +718,14 @@ type CloudPcOnPremisesConnectionable interface {
     GetAlternateResourceUrl()(*string)
     GetConnectionType()(*CloudPcOnPremisesConnectionType)
     GetDisplayName()(*string)
+    GetHealthCheckPaused()(*bool)
     GetHealthCheckStatus()(*CloudPcOnPremisesConnectionStatus)
     GetHealthCheckStatusDetail()(CloudPcOnPremisesConnectionStatusDetailable)
     GetInUse()(*bool)
+    GetInUseByCloudPc()(*bool)
     GetOrganizationalUnit()(*string)
     GetResourceGroupId()(*string)
+    GetScopeIds()([]string)
     GetSubnetId()(*string)
     GetSubscriptionId()(*string)
     GetSubscriptionName()(*string)
@@ -623,11 +737,14 @@ type CloudPcOnPremisesConnectionable interface {
     SetAlternateResourceUrl(value *string)()
     SetConnectionType(value *CloudPcOnPremisesConnectionType)()
     SetDisplayName(value *string)()
+    SetHealthCheckPaused(value *bool)()
     SetHealthCheckStatus(value *CloudPcOnPremisesConnectionStatus)()
     SetHealthCheckStatusDetail(value CloudPcOnPremisesConnectionStatusDetailable)()
     SetInUse(value *bool)()
+    SetInUseByCloudPc(value *bool)()
     SetOrganizationalUnit(value *string)()
     SetResourceGroupId(value *string)()
+    SetScopeIds(value []string)()
     SetSubnetId(value *string)()
     SetSubscriptionId(value *string)()
     SetSubscriptionName(value *string)()

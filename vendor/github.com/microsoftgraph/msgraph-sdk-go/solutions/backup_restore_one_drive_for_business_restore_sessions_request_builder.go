@@ -17,21 +17,21 @@ type BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilder struct {
 // BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilderGetQueryParameters the list of OneDrive for Business restore sessions available in the tenant.
 type BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilderGetQueryParameters struct {
     // Include count of items
-    Count *bool `uriparametername:"%24count"`
+    Count *bool "uriparametername:\"%24count\""
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Filter items by property values
-    Filter *string `uriparametername:"%24filter"`
+    Filter *string "uriparametername:\"%24filter\""
     // Order items by property values
-    Orderby []string `uriparametername:"%24orderby"`
+    Orderby []string "uriparametername:\"%24orderby\""
     // Search items by search phrases
-    Search *string `uriparametername:"%24search"`
+    Search *string "uriparametername:\"%24search\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
     // Skip the first n items
-    Skip *int32 `uriparametername:"%24skip"`
+    Skip *int32 "uriparametername:\"%24skip\""
     // Show only the first n items
-    Top *int32 `uriparametername:"%24top"`
+    Top *int32 "uriparametername:\"%24top\""
 }
 // BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilderGetRequestConfiguration struct {
@@ -99,7 +99,7 @@ func (m *BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilder) Get(ctx 
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.OneDriveForBusinessRestoreSessionCollectionResponseable), nil
 }
-// Post create a new oneDriveForBusinessRestoreSession object.
+// Post create a new oneDriveForBusinessRestoreSession object. To create a granular restore session, granular drive restore artifacts must be present in the payload. A request can't include both granularDriveRestoreArtifact and driveRestoreArtifact in the same create or update request. If no payload is provided when you create the restore session, the request creates an empty standard restore session by default.
 // returns a OneDriveForBusinessRestoreSessionable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
@@ -136,7 +136,7 @@ func (m *BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilder) ToGetReq
     requestInfo.Headers.TryAdd("Accept", "application/json")
     return requestInfo, nil
 }
-// ToPostRequestInformation create a new oneDriveForBusinessRestoreSession object.
+// ToPostRequestInformation create a new oneDriveForBusinessRestoreSession object. To create a granular restore session, granular drive restore artifacts must be present in the payload. A request can't include both granularDriveRestoreArtifact and driveRestoreArtifact in the same create or update request. If no payload is provided when you create the restore session, the request creates an empty standard restore session by default.
 // returns a *RequestInformation when successful
 func (m *BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilder) ToPostRequestInformation(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.OneDriveForBusinessRestoreSessionable, requestConfiguration *BackupRestoreOneDriveForBusinessRestoreSessionsRequestBuilderPostRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.POST, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

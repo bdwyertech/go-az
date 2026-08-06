@@ -37,6 +37,14 @@ func CreateDirectoryObjectFromDiscriminatorValue(parseNode i878a80d2330e89d26896
                         return NewActivityBasedTimeoutPolicy(), nil
                     case "#microsoft.graph.administrativeUnit":
                         return NewAdministrativeUnit(), nil
+                    case "#microsoft.graph.agentIdentity":
+                        return NewAgentIdentity(), nil
+                    case "#microsoft.graph.agentIdentityBlueprint":
+                        return NewAgentIdentityBlueprint(), nil
+                    case "#microsoft.graph.agentIdentityBlueprintPrincipal":
+                        return NewAgentIdentityBlueprintPrincipal(), nil
+                    case "#microsoft.graph.agentUser":
+                        return NewAgentUser(), nil
                     case "#microsoft.graph.application":
                         return NewApplication(), nil
                     case "#microsoft.graph.appManagementPolicy":
@@ -67,6 +75,8 @@ func CreateDirectoryObjectFromDiscriminatorValue(parseNode i878a80d2330e89d26896
                         return NewEndpoint(), nil
                     case "#microsoft.graph.extensionProperty":
                         return NewExtensionProperty(), nil
+                    case "#microsoft.graph.federatedTokenValidationPolicy":
+                        return NewFederatedTokenValidationPolicy(), nil
                     case "#microsoft.graph.group":
                         return NewGroup(), nil
                     case "#microsoft.graph.groupSettingTemplate":
@@ -75,6 +85,8 @@ func CreateDirectoryObjectFromDiscriminatorValue(parseNode i878a80d2330e89d26896
                         return NewHomeRealmDiscoveryPolicy(), nil
                     case "#microsoft.graph.identitySecurityDefaultsEnforcementPolicy":
                         return NewIdentitySecurityDefaultsEnforcementPolicy(), nil
+                    case "#microsoft.graph.mailbox":
+                        return NewMailbox(), nil
                     case "#microsoft.graph.multiTenantOrganizationMember":
                         return NewMultiTenantOrganizationMember(), nil
                     case "#microsoft.graph.organization":
@@ -85,6 +97,8 @@ func CreateDirectoryObjectFromDiscriminatorValue(parseNode i878a80d2330e89d26896
                         return NewPermissionGrantPolicy(), nil
                     case "#microsoft.graph.policyBase":
                         return NewPolicyBase(), nil
+                    case "#microsoft.graph.remoteTenantGroup":
+                        return NewRemoteTenantGroup(), nil
                     case "#microsoft.graph.resourceSpecificPermissionGrant":
                         return NewResourceSpecificPermissionGrant(), nil
                     case "#microsoft.graph.servicePrincipal":

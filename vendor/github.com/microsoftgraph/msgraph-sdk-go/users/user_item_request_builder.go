@@ -24,9 +24,9 @@ type UserItemRequestBuilderDeleteRequestConfiguration struct {
 // UserItemRequestBuilderGetQueryParameters retrieve the properties and relationships of user object. This operation returns by default only a subset of the more commonly used properties for each user. These default properties are noted in the Properties section. To get properties that are not returned by default, do a GET operation for the user and specify the properties in a $select OData query option. Because the user resource supports extensions, you can also use the GET operation to get custom properties and extension data in a user instance. Customers through Microsoft Entra ID for customers can also use this API operation to retrieve their details.
 type UserItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // UserItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type UserItemRequestBuilderGetRequestConfiguration struct {
@@ -379,7 +379,7 @@ func (m *UserItemRequestBuilder) OwnedDevices()(*ItemOwnedDevicesRequestBuilder)
 func (m *UserItemRequestBuilder) OwnedObjects()(*ItemOwnedObjectsRequestBuilder) {
     return NewItemOwnedObjectsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
-// Patch update the properties of a user object.
+// Patch update the properties of a user object. To use this API to update an agentUser, specify an @odata.type property with a value of #microsoft.graph.agentUser in the request body.
 // returns a Userable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
@@ -492,6 +492,11 @@ func (m *UserItemRequestBuilder) Settings()(*ItemSettingsRequestBuilder) {
 func (m *UserItemRequestBuilder) Solutions()(*ItemSolutionsRequestBuilder) {
     return NewItemSolutionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
+// SponsorOf provides operations to manage the sponsorOf property of the microsoft.graph.user entity.
+// returns a *ItemSponsorOfRequestBuilder when successful
+func (m *UserItemRequestBuilder) SponsorOf()(*ItemSponsorOfRequestBuilder) {
+    return NewItemSponsorOfRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
 // Sponsors provides operations to manage the sponsors property of the microsoft.graph.user entity.
 // returns a *ItemSponsorsRequestBuilder when successful
 func (m *UserItemRequestBuilder) Sponsors()(*ItemSponsorsRequestBuilder) {
@@ -532,7 +537,7 @@ func (m *UserItemRequestBuilder) ToGetRequestInformation(ctx context.Context, re
     requestInfo.Headers.TryAdd("Accept", "application/json")
     return requestInfo, nil
 }
-// ToPatchRequestInformation update the properties of a user object.
+// ToPatchRequestInformation update the properties of a user object. To use this API to update an agentUser, specify an @odata.type property with a value of #microsoft.graph.agentUser in the request body.
 // returns a *RequestInformation when successful
 func (m *UserItemRequestBuilder) ToPatchRequestInformation(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.Userable, requestConfiguration *UserItemRequestBuilderPatchRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.PATCH, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

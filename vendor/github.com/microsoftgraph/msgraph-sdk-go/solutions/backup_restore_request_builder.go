@@ -24,9 +24,9 @@ type BackupRestoreRequestBuilderDeleteRequestConfiguration struct {
 // BackupRestoreRequestBuilderGetQueryParameters get the serviceStatus of the Microsoft 365 Backup Storage service in a tenant.
 type BackupRestoreRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // BackupRestoreRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type BackupRestoreRequestBuilderGetRequestConfiguration struct {
@@ -43,6 +43,11 @@ type BackupRestoreRequestBuilderPatchRequestConfiguration struct {
     Headers *i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestHeaders
     // Request options
     Options []i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestOption
+}
+// BrowseSessions provides operations to manage the browseSessions property of the microsoft.graph.backupRestoreRoot entity.
+// returns a *BackupRestoreBrowseSessionsRequestBuilder when successful
+func (m *BackupRestoreRequestBuilder) BrowseSessions()(*BackupRestoreBrowseSessionsRequestBuilder) {
+    return NewBackupRestoreBrowseSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // NewBackupRestoreRequestBuilderInternal instantiates a new BackupRestoreRequestBuilder and sets the default values.
 func NewBackupRestoreRequestBuilderInternal(pathParameters map[string]string, requestAdapter i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestAdapter)(*BackupRestoreRequestBuilder) {
@@ -87,6 +92,11 @@ func (m *BackupRestoreRequestBuilder) DriveProtectionUnits()(*BackupRestoreDrive
 // returns a *BackupRestoreDriveProtectionUnitsBulkAdditionJobsRequestBuilder when successful
 func (m *BackupRestoreRequestBuilder) DriveProtectionUnitsBulkAdditionJobs()(*BackupRestoreDriveProtectionUnitsBulkAdditionJobsRequestBuilder) {
     return NewBackupRestoreDriveProtectionUnitsBulkAdditionJobsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// EmailNotificationsSetting provides operations to manage the emailNotificationsSetting property of the microsoft.graph.backupRestoreRoot entity.
+// returns a *BackupRestoreEmailNotificationsSettingRequestBuilder when successful
+func (m *BackupRestoreRequestBuilder) EmailNotificationsSetting()(*BackupRestoreEmailNotificationsSettingRequestBuilder) {
+    return NewBackupRestoreEmailNotificationsSettingRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // Enable provides operations to call the enable method.
 // returns a *BackupRestoreEnableRequestBuilder when successful
@@ -140,6 +150,11 @@ func (m *BackupRestoreRequestBuilder) MailboxProtectionUnits()(*BackupRestoreMai
 // returns a *BackupRestoreMailboxProtectionUnitsBulkAdditionJobsRequestBuilder when successful
 func (m *BackupRestoreRequestBuilder) MailboxProtectionUnitsBulkAdditionJobs()(*BackupRestoreMailboxProtectionUnitsBulkAdditionJobsRequestBuilder) {
     return NewBackupRestoreMailboxProtectionUnitsBulkAdditionJobsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// OneDriveForBusinessBrowseSessions provides operations to manage the oneDriveForBusinessBrowseSessions property of the microsoft.graph.backupRestoreRoot entity.
+// returns a *BackupRestoreOneDriveForBusinessBrowseSessionsRequestBuilder when successful
+func (m *BackupRestoreRequestBuilder) OneDriveForBusinessBrowseSessions()(*BackupRestoreOneDriveForBusinessBrowseSessionsRequestBuilder) {
+    return NewBackupRestoreOneDriveForBusinessBrowseSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // OneDriveForBusinessProtectionPolicies provides operations to manage the oneDriveForBusinessProtectionPolicies property of the microsoft.graph.backupRestoreRoot entity.
 // returns a *BackupRestoreOneDriveForBusinessProtectionPoliciesRequestBuilder when successful
@@ -195,6 +210,11 @@ func (m *BackupRestoreRequestBuilder) RestoreSessions()(*BackupRestoreRestoreSes
 // returns a *BackupRestoreServiceAppsRequestBuilder when successful
 func (m *BackupRestoreRequestBuilder) ServiceApps()(*BackupRestoreServiceAppsRequestBuilder) {
     return NewBackupRestoreServiceAppsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// SharePointBrowseSessions provides operations to manage the sharePointBrowseSessions property of the microsoft.graph.backupRestoreRoot entity.
+// returns a *BackupRestoreSharePointBrowseSessionsRequestBuilder when successful
+func (m *BackupRestoreRequestBuilder) SharePointBrowseSessions()(*BackupRestoreSharePointBrowseSessionsRequestBuilder) {
+    return NewBackupRestoreSharePointBrowseSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // SharePointProtectionPolicies provides operations to manage the sharePointProtectionPolicies property of the microsoft.graph.backupRestoreRoot entity.
 // returns a *BackupRestoreSharePointProtectionPoliciesRequestBuilder when successful

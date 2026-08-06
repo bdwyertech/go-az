@@ -24,9 +24,9 @@ type EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestB
 // EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilderGetQueryParameters get resource from identityGovernance
 type EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilderGetRequestConfiguration struct {
@@ -167,6 +167,11 @@ func (m *EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequ
         return nil, err
     }
     return requestInfo, nil
+}
+// UploadSessions provides operations to manage the uploadSessions property of the microsoft.graph.accessPackageResource entity.
+// returns a *EntitlementManagementResourceRequestsItemResourceScopesItemResourceUploadSessionsRequestBuilder when successful
+func (m *EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilder) UploadSessions()(*EntitlementManagementResourceRequestsItemResourceScopesItemResourceUploadSessionsRequestBuilder) {
+    return NewEntitlementManagementResourceRequestsItemResourceScopesItemResourceUploadSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // WithUrl returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
 // returns a *EntitlementManagementResourceRequestsItemResourceScopesItemResourceRequestBuilder when successful

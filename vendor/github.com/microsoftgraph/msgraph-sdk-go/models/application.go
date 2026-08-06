@@ -24,6 +24,24 @@ func NewApplication()(*Application) {
 // CreateApplicationFromDiscriminatorValue creates a new instance of the appropriate class based on discriminator value
 // returns a Parsable when successful
 func CreateApplicationFromDiscriminatorValue(parseNode i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode)(i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable, error) {
+    if parseNode != nil {
+        mappingValueNode, err := parseNode.GetChildNode("@odata.type")
+        if err != nil {
+            return nil, err
+        }
+        if mappingValueNode != nil {
+            mappingValue, err := mappingValueNode.GetStringValue()
+            if err != nil {
+                return nil, err
+            }
+            if mappingValue != nil {
+                switch *mappingValue {
+                    case "#microsoft.graph.agentIdentityBlueprint":
+                        return NewAgentIdentityBlueprint(), nil
+                }
+            }
+        }
+    }
     return NewApplication(), nil
 }
 // GetAddIns gets the addIns property value. Defines custom behavior that a consuming service can use to call an app in specific contexts. For example, applications that can render file streams can set the addIns property for its 'FileHandler' functionality. This lets services like Microsoft 365 call the application in the context of a document the user is working on.
@@ -119,6 +137,18 @@ func (m *Application) GetCertification()(Certificationable) {
     }
     if val != nil {
         return val.(Certificationable)
+    }
+    return nil
+}
+// GetCreatedByAppId gets the createdByAppId property value. The appId of the application that created this application. Set internally by Microsoft Entra ID. Read-only.
+// returns a *string when successful
+func (m *Application) GetCreatedByAppId()(*string) {
+    val, err := m.GetBackingStore().Get("createdByAppId")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*string)
     }
     return nil
 }
@@ -320,6 +350,16 @@ func (m *Application) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26
         }
         return nil
     }
+    res["createdByAppId"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetStringValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetCreatedByAppId(val)
+        }
+        return nil
+    }
     res["createdDateTime"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetTimeValue()
         if err != nil {
@@ -474,6 +514,16 @@ func (m *Application) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26
         }
         return nil
     }
+    res["isDisabled"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetBoolValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetIsDisabled(val)
+        }
+        return nil
+    }
     res["isFallbackPublicClient"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetBoolValue()
         if err != nil {
@@ -507,6 +557,22 @@ func (m *Application) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26
         }
         if val != nil {
             m.SetLogo(val)
+        }
+        return nil
+    }
+    res["managerApplications"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetCollectionOfPrimitiveValues("uuid")
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            res := make([]i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID, len(val))
+            for i, v := range val {
+                if v != nil {
+                    res[i] = *(v.(*i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID))
+                }
+            }
+            m.SetManagerApplications(res)
         }
         return nil
     }
@@ -848,6 +914,18 @@ func (m *Application) GetIsDeviceOnlyAuthSupported()(*bool) {
     }
     return nil
 }
+// GetIsDisabled gets the isDisabled property value. The isDisabled property
+// returns a *bool when successful
+func (m *Application) GetIsDisabled()(*bool) {
+    val, err := m.GetBackingStore().Get("isDisabled")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*bool)
+    }
+    return nil
+}
 // GetIsFallbackPublicClient gets the isFallbackPublicClient property value. Specifies the fallback application type as public client, such as an installed application running on a mobile device. The default value is false, which means the fallback application type is confidential client such as a web app. There are certain scenarios where Microsoft Entra ID can't determine the client application type. For example, the ROPC flow where it's configured without specifying a redirect URI. In those cases, Microsoft Entra ID interprets the application type based on the value of this property.
 // returns a *bool when successful
 func (m *Application) GetIsFallbackPublicClient()(*bool) {
@@ -881,6 +959,18 @@ func (m *Application) GetLogo()([]byte) {
     }
     if val != nil {
         return val.([]byte)
+    }
+    return nil
+}
+// GetManagerApplications gets the managerApplications property value. A collection of application IDs for Microsoft first-party applications designated as managers. Manager applications can create service principals, agent identities, and agent users for managed agent blueprints. Limited to a maximum of 10 entries. Not nullable. Only supported on agentIdentityBlueprint objects; attempts to set this property on non-agent-blueprint applications return an error. Not returned by default; must be explicitly requested via $select.
+// returns a []UUID when successful
+func (m *Application) GetManagerApplications()([]i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID) {
+    val, err := m.GetBackingStore().Get("managerApplications")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.([]i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID)
     }
     return nil
 }
@@ -1245,6 +1335,12 @@ func (m *Application) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6
         }
     }
     {
+        err = writer.WriteStringValue("createdByAppId", m.GetCreatedByAppId())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteTimeValue("createdDateTime", m.GetCreatedDateTime())
         if err != nil {
             return err
@@ -1341,6 +1437,12 @@ func (m *Application) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6
         }
     }
     {
+        err = writer.WriteBoolValue("isDisabled", m.GetIsDisabled())
+        if err != nil {
+            return err
+        }
+    }
+    {
         err = writer.WriteBoolValue("isFallbackPublicClient", m.GetIsFallbackPublicClient())
         if err != nil {
             return err
@@ -1360,6 +1462,12 @@ func (m *Application) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6
     }
     {
         err = writer.WriteByteArrayValue("logo", m.GetLogo())
+        if err != nil {
+            return err
+        }
+    }
+    if m.GetManagerApplications() != nil {
+        err = writer.WriteCollectionOfUUIDValues("managerApplications", m.GetManagerApplications())
         if err != nil {
             return err
         }
@@ -1597,6 +1705,13 @@ func (m *Application) SetCertification(value Certificationable)() {
         panic(err)
     }
 }
+// SetCreatedByAppId sets the createdByAppId property value. The appId of the application that created this application. Set internally by Microsoft Entra ID. Read-only.
+func (m *Application) SetCreatedByAppId(value *string)() {
+    err := m.GetBackingStore().Set("createdByAppId", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetCreatedDateTime sets the createdDateTime property value. The date and time the application was registered. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only.  Supports $filter (eq, ne, not, ge, le, in, and eq on null values) and $orderby.
 func (m *Application) SetCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)() {
     err := m.GetBackingStore().Set("createdDateTime", value)
@@ -1688,6 +1803,13 @@ func (m *Application) SetIsDeviceOnlyAuthSupported(value *bool)() {
         panic(err)
     }
 }
+// SetIsDisabled sets the isDisabled property value. The isDisabled property
+func (m *Application) SetIsDisabled(value *bool)() {
+    err := m.GetBackingStore().Set("isDisabled", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetIsFallbackPublicClient sets the isFallbackPublicClient property value. Specifies the fallback application type as public client, such as an installed application running on a mobile device. The default value is false, which means the fallback application type is confidential client such as a web app. There are certain scenarios where Microsoft Entra ID can't determine the client application type. For example, the ROPC flow where it's configured without specifying a redirect URI. In those cases, Microsoft Entra ID interprets the application type based on the value of this property.
 func (m *Application) SetIsFallbackPublicClient(value *bool)() {
     err := m.GetBackingStore().Set("isFallbackPublicClient", value)
@@ -1705,6 +1827,13 @@ func (m *Application) SetKeyCredentials(value []KeyCredentialable)() {
 // SetLogo sets the logo property value. The main logo for the application. Not nullable.
 func (m *Application) SetLogo(value []byte)() {
     err := m.GetBackingStore().Set("logo", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetManagerApplications sets the managerApplications property value. A collection of application IDs for Microsoft first-party applications designated as managers. Manager applications can create service principals, agent identities, and agent users for managed agent blueprints. Limited to a maximum of 10 entries. Not nullable. Only supported on agentIdentityBlueprint objects; attempts to set this property on non-agent-blueprint applications return an error. Not returned by default; must be explicitly requested via $select.
+func (m *Application) SetManagerApplications(value []i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID)() {
+    err := m.GetBackingStore().Set("managerApplications", value)
     if err != nil {
         panic(err)
     }
@@ -1888,6 +2017,7 @@ type Applicationable interface {
     GetAppRoles()([]AppRoleable)
     GetAuthenticationBehaviors()(AuthenticationBehaviorsable)
     GetCertification()(Certificationable)
+    GetCreatedByAppId()(*string)
     GetCreatedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
     GetCreatedOnBehalfOf()(DirectoryObjectable)
     GetDefaultRedirectUri()(*string)
@@ -1901,9 +2031,11 @@ type Applicationable interface {
     GetIdentifierUris()([]string)
     GetInfo()(InformationalUrlable)
     GetIsDeviceOnlyAuthSupported()(*bool)
+    GetIsDisabled()(*bool)
     GetIsFallbackPublicClient()(*bool)
     GetKeyCredentials()([]KeyCredentialable)
     GetLogo()([]byte)
+    GetManagerApplications()([]i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID)
     GetNativeAuthenticationApisEnabled()(*NativeAuthenticationApisEnabled)
     GetNotes()(*string)
     GetOauth2RequirePostResponse()(*bool)
@@ -1936,6 +2068,7 @@ type Applicationable interface {
     SetAppRoles(value []AppRoleable)()
     SetAuthenticationBehaviors(value AuthenticationBehaviorsable)()
     SetCertification(value Certificationable)()
+    SetCreatedByAppId(value *string)()
     SetCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
     SetCreatedOnBehalfOf(value DirectoryObjectable)()
     SetDefaultRedirectUri(value *string)()
@@ -1949,9 +2082,11 @@ type Applicationable interface {
     SetIdentifierUris(value []string)()
     SetInfo(value InformationalUrlable)()
     SetIsDeviceOnlyAuthSupported(value *bool)()
+    SetIsDisabled(value *bool)()
     SetIsFallbackPublicClient(value *bool)()
     SetKeyCredentials(value []KeyCredentialable)()
     SetLogo(value []byte)()
+    SetManagerApplications(value []i561e97a8befe7661a44c8f54600992b4207a3a0cf6770e5559949bc276de2e22.UUID)()
     SetNativeAuthenticationApisEnabled(value *NativeAuthenticationApisEnabled)()
     SetNotes(value *string)()
     SetOauth2RequirePostResponse(value *bool)()

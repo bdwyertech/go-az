@@ -24,9 +24,9 @@ type BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBu
 // BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderGetQueryParameters the list of SharePoint restore sessions available in the tenant.
 type BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderGetRequestConfiguration struct {
@@ -93,9 +93,17 @@ func (m *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemReque
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SharePointRestoreSessionable), nil
 }
-// Patch update the navigation property sharePointRestoreSessions in solutions
+// GranularSiteRestoreArtifacts provides operations to manage the granularSiteRestoreArtifacts property of the microsoft.graph.sharePointRestoreSession entity.
+// returns a *BackupRestoreSharePointRestoreSessionsItemGranularSiteRestoreArtifactsRequestBuilder when successful
+func (m *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilder) GranularSiteRestoreArtifacts()(*BackupRestoreSharePointRestoreSessionsItemGranularSiteRestoreArtifactsRequestBuilder) {
+    return NewBackupRestoreSharePointRestoreSessionsItemGranularSiteRestoreArtifactsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// Patch update the properties of a sharePointRestoreSession object.
 // returns a SharePointRestoreSessionable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
+// [Find more info here]
+// 
+// [Find more info here]: https://learn.microsoft.com/graph/api/sharepointrestoresession-update?view=graph-rest-1.0
 func (m *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilder) Patch(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SharePointRestoreSessionable, requestConfiguration *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderPatchRequestConfiguration)(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SharePointRestoreSessionable, error) {
     requestInfo, err := m.ToPatchRequestInformation(ctx, body, requestConfiguration);
     if err != nil {
@@ -148,7 +156,7 @@ func (m *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemReque
     requestInfo.Headers.TryAdd("Accept", "application/json")
     return requestInfo, nil
 }
-// ToPatchRequestInformation update the navigation property sharePointRestoreSessions in solutions
+// ToPatchRequestInformation update the properties of a sharePointRestoreSession object.
 // returns a *RequestInformation when successful
 func (m *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilder) ToPatchRequestInformation(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SharePointRestoreSessionable, requestConfiguration *BackupRestoreSharePointRestoreSessionsSharePointRestoreSessionItemRequestBuilderPatchRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.PATCH, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

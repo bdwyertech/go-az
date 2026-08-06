@@ -24,9 +24,9 @@ type EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceR
 // EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetQueryParameters get resource from identityGovernance
 type EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetRequestConfiguration struct {
@@ -167,6 +167,11 @@ func (m *EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResou
         return nil, err
     }
     return requestInfo, nil
+}
+// UploadSessions provides operations to manage the uploadSessions property of the microsoft.graph.accessPackageResource entity.
+// returns a *EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilder when successful
+func (m *EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilder) UploadSessions()(*EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilder) {
+    return NewEntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // WithUrl returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
 // returns a *EntitlementManagementAccessPackagesItemResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilder when successful

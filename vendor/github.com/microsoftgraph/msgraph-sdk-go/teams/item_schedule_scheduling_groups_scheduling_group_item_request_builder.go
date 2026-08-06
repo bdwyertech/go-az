@@ -24,9 +24,9 @@ type ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderDeleteRequestC
 // ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderGetQueryParameters retrieve the properties and relationships of a schedulingGroup by ID.
 type ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderGetRequestConfiguration struct {
@@ -57,7 +57,7 @@ func NewItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilder(rawUrl str
     urlParams["request-raw-url"] = rawUrl
     return NewItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderInternal(urlParams, requestAdapter)
 }
-// Delete mark a schedulingGroup as inactive by setting its isActive property.This method does not remove the schedulingGroup from the schedule. Existing shift instances assigned to the scheduling group remain part of the group.
+// Delete mark a schedulingGroup as inactive by setting its isActive property.This method doesn't remove the schedulingGroup from the schedule. Existing shift instances assigned to the scheduling group remain part of the group.
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
 // 
@@ -122,7 +122,7 @@ func (m *ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilder) Patch(ct
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.SchedulingGroupable), nil
 }
-// ToDeleteRequestInformation mark a schedulingGroup as inactive by setting its isActive property.This method does not remove the schedulingGroup from the schedule. Existing shift instances assigned to the scheduling group remain part of the group.
+// ToDeleteRequestInformation mark a schedulingGroup as inactive by setting its isActive property.This method doesn't remove the schedulingGroup from the schedule. Existing shift instances assigned to the scheduling group remain part of the group.
 // returns a *RequestInformation when successful
 func (m *ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilder) ToDeleteRequestInformation(ctx context.Context, requestConfiguration *ItemScheduleSchedulingGroupsSchedulingGroupItemRequestBuilderDeleteRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.DELETE, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

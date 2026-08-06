@@ -17,21 +17,21 @@ type ItemAuthenticationFido2MethodsRequestBuilder struct {
 // ItemAuthenticationFido2MethodsRequestBuilderGetQueryParameters represents the FIDO2 security keys registered to a user for authentication.
 type ItemAuthenticationFido2MethodsRequestBuilderGetQueryParameters struct {
     // Include count of items
-    Count *bool `uriparametername:"%24count"`
+    Count *bool "uriparametername:\"%24count\""
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Filter items by property values
-    Filter *string `uriparametername:"%24filter"`
+    Filter *string "uriparametername:\"%24filter\""
     // Order items by property values
-    Orderby []string `uriparametername:"%24orderby"`
+    Orderby []string "uriparametername:\"%24orderby\""
     // Search items by search phrases
-    Search *string `uriparametername:"%24search"`
+    Search *string "uriparametername:\"%24search\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
     // Skip the first n items
-    Skip *int32 `uriparametername:"%24skip"`
+    Skip *int32 "uriparametername:\"%24skip\""
     // Show only the first n items
-    Top *int32 `uriparametername:"%24top"`
+    Top *int32 "uriparametername:\"%24top\""
 }
 // ItemAuthenticationFido2MethodsRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemAuthenticationFido2MethodsRequestBuilderGetRequestConfiguration struct {
@@ -71,6 +71,11 @@ func NewItemAuthenticationFido2MethodsRequestBuilder(rawUrl string, requestAdapt
 // returns a *ItemAuthenticationFido2MethodsCountRequestBuilder when successful
 func (m *ItemAuthenticationFido2MethodsRequestBuilder) Count()(*ItemAuthenticationFido2MethodsCountRequestBuilder) {
     return NewItemAuthenticationFido2MethodsCountRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// CreationOptions provides operations to call the creationOptions method.
+// returns a *ItemAuthenticationFido2MethodsCreationOptionsRequestBuilder when successful
+func (m *ItemAuthenticationFido2MethodsRequestBuilder) CreationOptions()(*ItemAuthenticationFido2MethodsCreationOptionsRequestBuilder) {
+    return NewItemAuthenticationFido2MethodsCreationOptionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // Get represents the FIDO2 security keys registered to a user for authentication.
 // returns a Fido2AuthenticationMethodCollectionResponseable when successful

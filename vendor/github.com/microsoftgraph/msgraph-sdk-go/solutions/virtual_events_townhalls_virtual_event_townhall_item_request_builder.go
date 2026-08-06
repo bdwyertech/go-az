@@ -24,9 +24,9 @@ type VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilderDeleteRequestCo
 // VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilderGetQueryParameters read the properties and relationships of a virtualEventTownhall object. All roles can get the details of a townhall event.
 type VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilderGetRequestConfiguration struct {
@@ -123,6 +123,26 @@ func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) Patch(ctx
 // returns a *VirtualEventsTownhallsItemPresentersRequestBuilder when successful
 func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) Presenters()(*VirtualEventsTownhallsItemPresentersRequestBuilder) {
     return NewVirtualEventsTownhallsItemPresentersRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// RegistrationConfiguration provides operations to manage the registrationConfiguration property of the microsoft.graph.virtualEventTownhall entity.
+// returns a *VirtualEventsTownhallsItemRegistrationConfigurationRequestBuilder when successful
+func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) RegistrationConfiguration()(*VirtualEventsTownhallsItemRegistrationConfigurationRequestBuilder) {
+    return NewVirtualEventsTownhallsItemRegistrationConfigurationRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// Registrations provides operations to manage the registrations property of the microsoft.graph.virtualEventTownhall entity.
+// returns a *VirtualEventsTownhallsItemRegistrationsRequestBuilder when successful
+func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) Registrations()(*VirtualEventsTownhallsItemRegistrationsRequestBuilder) {
+    return NewVirtualEventsTownhallsItemRegistrationsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// RegistrationsWithEmail provides operations to manage the registrations property of the microsoft.graph.virtualEventTownhall entity.
+// returns a *VirtualEventsTownhallsItemRegistrationsWithEmailRequestBuilder when successful
+func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) RegistrationsWithEmail(email *string)(*VirtualEventsTownhallsItemRegistrationsWithEmailRequestBuilder) {
+    return NewVirtualEventsTownhallsItemRegistrationsWithEmailRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter, email)
+}
+// RegistrationsWithUserId provides operations to manage the registrations property of the microsoft.graph.virtualEventTownhall entity.
+// returns a *VirtualEventsTownhallsItemRegistrationsWithUserIdRequestBuilder when successful
+func (m *VirtualEventsTownhallsVirtualEventTownhallItemRequestBuilder) RegistrationsWithUserId(userId *string)(*VirtualEventsTownhallsItemRegistrationsWithUserIdRequestBuilder) {
+    return NewVirtualEventsTownhallsItemRegistrationsWithUserIdRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter, userId)
 }
 // Sessions provides operations to manage the sessions property of the microsoft.graph.virtualEvent entity.
 // returns a *VirtualEventsTownhallsItemSessionsRequestBuilder when successful

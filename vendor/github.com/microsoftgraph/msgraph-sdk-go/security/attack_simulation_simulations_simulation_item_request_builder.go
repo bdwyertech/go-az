@@ -24,9 +24,9 @@ type AttackSimulationSimulationsSimulationItemRequestBuilderDeleteRequestConfigu
 // AttackSimulationSimulationsSimulationItemRequestBuilderGetQueryParameters get an attack simulation campaign for a tenant.
 type AttackSimulationSimulationsSimulationItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // AttackSimulationSimulationsSimulationItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type AttackSimulationSimulationsSimulationItemRequestBuilderGetRequestConfiguration struct {
@@ -109,7 +109,7 @@ func (m *AttackSimulationSimulationsSimulationItemRequestBuilder) LandingPage()(
 func (m *AttackSimulationSimulationsSimulationItemRequestBuilder) LoginPage()(*AttackSimulationSimulationsItemLoginPageRequestBuilder) {
     return NewAttackSimulationSimulationsItemLoginPageRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
-// Patch update an attack simulation campaign for a tenant.
+// Patch update an attack simulation campaign for a tenant. You can only update simulations that are in draft status.
 // returns a Simulationable when successful
 // returns a ODataError error when the service returns a 4XX or 5XX status code
 // [Find more info here]
@@ -162,7 +162,7 @@ func (m *AttackSimulationSimulationsSimulationItemRequestBuilder) ToGetRequestIn
     requestInfo.Headers.TryAdd("Accept", "application/json")
     return requestInfo, nil
 }
-// ToPatchRequestInformation update an attack simulation campaign for a tenant.
+// ToPatchRequestInformation update an attack simulation campaign for a tenant. You can only update simulations that are in draft status.
 // returns a *RequestInformation when successful
 func (m *AttackSimulationSimulationsSimulationItemRequestBuilder) ToPatchRequestInformation(ctx context.Context, body iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.Simulationable, requestConfiguration *AttackSimulationSimulationsSimulationItemRequestBuilderPatchRequestConfiguration)(*i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.RequestInformation, error) {
     requestInfo := i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.NewRequestInformationWithMethodAndUrlTemplateAndPathParameters(i2ae4187f7daee263371cb1c977df639813ab50ffa529013b7437480d1ec0158f.PATCH, m.BaseRequestBuilder.UrlTemplate, m.BaseRequestBuilder.PathParameters)

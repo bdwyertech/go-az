@@ -24,9 +24,9 @@ type ItemSitesItemListsListItemRequestBuilderDeleteRequestConfiguration struct {
 // ItemSitesItemListsListItemRequestBuilderGetQueryParameters the collection of lists under this site.
 type ItemSitesItemListsListItemRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // ItemSitesItemListsListItemRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type ItemSitesItemListsListItemRequestBuilderGetRequestConfiguration struct {
@@ -147,6 +147,11 @@ func (m *ItemSitesItemListsListItemRequestBuilder) Patch(ctx context.Context, bo
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.Listable), nil
+}
+// Permissions provides operations to manage the permissions property of the microsoft.graph.list entity.
+// returns a *ItemSitesItemListsItemPermissionsRequestBuilder when successful
+func (m *ItemSitesItemListsListItemRequestBuilder) Permissions()(*ItemSitesItemListsItemPermissionsRequestBuilder) {
+    return NewItemSitesItemListsItemPermissionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // Subscriptions provides operations to manage the subscriptions property of the microsoft.graph.list entity.
 // returns a *ItemSitesItemListsItemSubscriptionsRequestBuilder when successful

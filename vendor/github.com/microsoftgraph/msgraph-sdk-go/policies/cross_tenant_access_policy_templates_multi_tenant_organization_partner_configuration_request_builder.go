@@ -24,9 +24,9 @@ type CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfiguration
 // CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationRequestBuilderGetQueryParameters get the cross-tenant access policy template with inbound and outbound partner configuration settings for a multitenant organization.
 type CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationRequestBuilderGetRequestConfiguration struct {
@@ -118,6 +118,11 @@ func (m *CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigura
         return nil, nil
     }
     return res.(iadcd81124412c61e647227ecfc4449d8bba17de0380ddda76f641a29edf2b242.MultiTenantOrganizationPartnerConfigurationTemplateable), nil
+}
+// ResetToDefaultSettings provides operations to call the resetToDefaultSettings method.
+// returns a *CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationResetToDefaultSettingsRequestBuilder when successful
+func (m *CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationRequestBuilder) ResetToDefaultSettings()(*CrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationResetToDefaultSettingsRequestBuilder) {
+    return NewCrossTenantAccessPolicyTemplatesMultiTenantOrganizationPartnerConfigurationResetToDefaultSettingsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // ToDeleteRequestInformation delete navigation property multiTenantOrganizationPartnerConfiguration for policies
 // returns a *RequestInformation when successful

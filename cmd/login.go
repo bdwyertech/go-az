@@ -46,7 +46,7 @@ var loginCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		s := az.ListSubscriptionsCLI(true)
+		s := az.ListSubscriptionsCLI(cmd.Context(), true)
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
 			log.Fatal(err)

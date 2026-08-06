@@ -3,11 +3,8 @@ package az
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net"
-	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -19,7 +16,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/cli"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
-	"github.com/gofrs/flock"
 )
 
 // TokenCredential represents a credential capable of providing an OAuth token.
@@ -58,20 +54,8 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		options.TenantID = "organizations"
 	}
 
-	t := http.DefaultTransport.(*http.Transport).Clone()
-	pubClientOpts := []public.Option{
-		public.WithCache(credCache),
-		public.WithHTTPClient(&http.Client{Transport: t}),
-		public.WithAuthority(fmt.Sprintf("https://login.microsoftonline.com/%s/", options.TenantID)),
-	}
-
 	if options.ClientID == "" {
 		options.ClientID = AZ_CLIENT_ID
-	}
-
-	pubClient, err := public.New(options.ClientID, pubClientOpts...)
-	if err != nil {
-		return
 	}
 
 	if len(options.Scopes) == 0 {
@@ -79,46 +63,44 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 			azure.PublicCloud.ServiceManagementEndpoint + "/.default", // https://management.core.windows.net//.default
 		}
 	}
-	opts := []public.AcquireSilentOption{}
-	if cachedAccounts, err := pubClient.Accounts(ctx); err == nil && len(cachedAccounts) > 0 {
-		var selected *public.Account
-		for _, a := range cachedAccounts {
-			if a.Realm == options.TenantID {
-				selected = &a
-				break
-			}
-		}
-
-		if selected == nil {
-			selected = &cachedAccounts[0]
-		}
-
-		opts = append(opts, public.WithSilentAccount(*selected))
-	}
-	opts = append(opts, public.WithTenantID(options.TenantID))
-	// We need to try to AcquireTokenSilent again because another process holding the lock may have returned successfully
-	if token, err = pubClient.AcquireTokenSilent(ctx, options.Scopes, opts...); err == nil {
+	// Step 1: attempt a cache-only acquisition.
+	if token, err = acquireSilent(ctx, options); err == nil {
 		return
-	} else if !credCache.locked {
-		log.Debugln("Silent token aquisition failed, proceeding to Interactive:", err.Error())
-		// Tooling might call out concurrently -- ensure we only have one interactive prompt at any given time
-		f := flock.New(filepath.Join(cacheDir(), ".go-az.lock"))
-		log.Debugln("Acquiring interactive lock")
-		if _, err = f.TryLockContext(ctx, time.Duration(rand.Intn(5000)+1000)*time.Millisecond); err != nil {
-			return
-		}
-		defer f.Unlock()
-		credCache.locked = true
-		return GetToken(ctx, options)
 	}
+	log.Debugln("Silent token acquisition failed:", err.Error())
 
-	//
-	// AcquireTokenInteractive
-	//
+	// Step 2: serialize interactive prompts across concurrent tooling.
+	lockPath, lerr := interactiveLockPath()
+	if lerr != nil {
+		return token, lerr
+	}
+	log.Debugln("Acquiring interactive lock")
 
-	// Keepalives do not play nice with aggressive proxies here
-	t.DisableKeepAlives = true
-	defer func() { t.DisableKeepAlives = false }()
+	// Step 3: retry silently while holding the lock, so a token written by
+	// whichever caller won the race is observed instead of prompting again.
+	err = withExclusiveLock(ctx, lockPath, func() error {
+		if t, serr := acquireSilent(ctx, options); serr == nil {
+			token = t
+			return nil
+		}
+		// Step 4: fall through to interactive only if that still fails.
+		token, err = acquireInteractive(ctx, options)
+		return err
+	})
+	return
+}
+
+// acquireInteractive performs the user-facing exchange, either via device code
+// or a local browser redirect. It is only reached while the interactive lock is
+// held, so at most one prompt is outstanding per credential directory.
+func acquireInteractive(ctx context.Context, options TokenOptions) (token public.AuthResult, err error) {
+	t := interactiveTransport()
+	defer t.CloseIdleConnections()
+
+	pubClient, err := newPubClient(options, t)
+	if err != nil {
+		return
+	}
 
 	if os.Getenv("GO_AZ_DEVICECODE") != "" {
 		var code public.DeviceCode

@@ -30,13 +30,13 @@ type VerifiedDomain struct {
 	IsInitial bool   `json:"isInitial"`
 }
 
-func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
-	p, err := cli.ProfilePath()
+func ListSubscriptionsCLI(ctx context.Context, refresh bool) []cli.Subscription {
+	p, err := profilePath()
 	if err != nil {
 		log.Fatal(err)
 	}
 	if _, err = os.Stat(p); errors.Is(err, os.ErrNotExist) || refresh {
-		if err = BuildProfile(); err != nil {
+		if err = BuildProfile(ctx); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -45,7 +45,10 @@ func ListSubscriptionsCLI(refresh bool) []cli.Subscription {
 		log.Fatal(err)
 	}
 	if len(o.Subscriptions) == 0 {
-		if err = BuildProfile(); err != nil {
+		if err = BuildProfile(ctx); err != nil {
+			log.Fatal(err)
+		}
+		if o, err = cli.LoadProfile(p); err != nil {
 			log.Fatal(err)
 		}
 	}

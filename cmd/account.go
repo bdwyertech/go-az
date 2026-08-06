@@ -54,7 +54,7 @@ var accountShowCmd = &cobra.Command{
 		var sub interface{}
 		subName, subId := viper.GetString("name"), viper.GetString("subscription")
 		if subName != "" || subId != "" {
-			for _, s := range az.ListSubscriptionsCLI(false) {
+			for _, s := range az.ListSubscriptionsCLI(cmd.Context(), false) {
 				if subId != "" && strings.EqualFold(subId, s.ID) {
 					sub = s
 					break
@@ -68,7 +68,7 @@ var accountShowCmd = &cobra.Command{
 				log.Fatal("Unable to find matching subscription!")
 			}
 		} else {
-			for _, s := range az.ListSubscriptionsCLI(false) {
+			for _, s := range az.ListSubscriptionsCLI(cmd.Context(), false) {
 				if s.IsDefault {
 					sub = s
 					break
@@ -89,7 +89,7 @@ var accountListCmd = &cobra.Command{
 	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
 	Run: func(cmd *cobra.Command, args []string) {
-		s := az.ListSubscriptionsCLI(viper.GetBool("refresh"))
+		s := az.ListSubscriptionsCLI(cmd.Context(), viper.GetBool("refresh"))
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
 			log.Fatal(err)

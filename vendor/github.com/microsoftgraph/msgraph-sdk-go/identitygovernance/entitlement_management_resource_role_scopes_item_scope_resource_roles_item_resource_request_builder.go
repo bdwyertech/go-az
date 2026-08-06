@@ -24,9 +24,9 @@ type EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRe
 // EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetQueryParameters get resource from identityGovernance
 type EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilderGetRequestConfiguration struct {
@@ -167,6 +167,11 @@ func (m *EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResour
         return nil, err
     }
     return requestInfo, nil
+}
+// UploadSessions provides operations to manage the uploadSessions property of the microsoft.graph.accessPackageResource entity.
+// returns a *EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilder when successful
+func (m *EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilder) UploadSessions()(*EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilder) {
+    return NewEntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceUploadSessionsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // WithUrl returns a request builder with the provided arbitrary URL. Using this method means any other path or query parameters are ignored.
 // returns a *EntitlementManagementResourceRoleScopesItemScopeResourceRolesItemResourceRequestBuilder when successful

@@ -17,9 +17,9 @@ type DirectoryRequestBuilder struct {
 // DirectoryRequestBuilderGetQueryParameters get directory
 type DirectoryRequestBuilderGetQueryParameters struct {
     // Expand related entities
-    Expand []string `uriparametername:"%24expand"`
+    Expand []string "uriparametername:\"%24expand\""
     // Select properties to be returned
-    Select []string `uriparametername:"%24select"`
+    Select []string "uriparametername:\"%24select\""
 }
 // DirectoryRequestBuilderGetRequestConfiguration configuration for the request such as headers, query parameters, and middleware options.
 type DirectoryRequestBuilderGetRequestConfiguration struct {
@@ -129,6 +129,16 @@ func (m *DirectoryRequestBuilder) Patch(ctx context.Context, body iadcd81124412c
 // returns a *PublicKeyInfrastructureRequestBuilder when successful
 func (m *DirectoryRequestBuilder) PublicKeyInfrastructure()(*PublicKeyInfrastructureRequestBuilder) {
     return NewPublicKeyInfrastructureRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// Recovery provides operations to manage the recovery property of the microsoft.graph.directory entity.
+// returns a *RecoveryRequestBuilder when successful
+func (m *DirectoryRequestBuilder) Recovery()(*RecoveryRequestBuilder) {
+    return NewRecoveryRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
+}
+// RemoteTenantGroups provides operations to manage the remoteTenantGroups property of the microsoft.graph.directory entity.
+// returns a *RemoteTenantGroupsRequestBuilder when successful
+func (m *DirectoryRequestBuilder) RemoteTenantGroups()(*RemoteTenantGroupsRequestBuilder) {
+    return NewRemoteTenantGroupsRequestBuilderInternal(m.BaseRequestBuilder.PathParameters, m.BaseRequestBuilder.RequestAdapter)
 }
 // Subscriptions provides operations to manage the subscriptions property of the microsoft.graph.directory entity.
 // returns a *SubscriptionsRequestBuilder when successful

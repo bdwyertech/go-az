@@ -149,6 +149,16 @@ func (m *Chat) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896388a
         }
         return nil
     }
+    res["migrationMode"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetEnumValue(ParseMigrationMode)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetMigrationMode(val.(*MigrationMode))
+        }
+        return nil
+    }
     res["onlineMeetingInfo"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
         val, err := n.GetObjectValue(CreateTeamworkOnlineMeetingInfoFromDiscriminatorValue)
         if err != nil {
@@ -156,6 +166,16 @@ func (m *Chat) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896388a
         }
         if val != nil {
             m.SetOnlineMeetingInfo(val.(TeamworkOnlineMeetingInfoable))
+        }
+        return nil
+    }
+    res["originalCreatedDateTime"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetTimeValue()
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            m.SetOriginalCreatedDateTime(val)
         }
         return nil
     }
@@ -204,6 +224,22 @@ func (m *Chat) GetFieldDeserializers()(map[string]func(i878a80d2330e89d26896388a
                 }
             }
             m.SetTabs(res)
+        }
+        return nil
+    }
+    res["targetedMessages"] = func (n i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.ParseNode) error {
+        val, err := n.GetCollectionOfObjectValues(CreateTargetedChatMessageFromDiscriminatorValue)
+        if err != nil {
+            return err
+        }
+        if val != nil {
+            res := make([]TargetedChatMessageable, len(val))
+            for i, v := range val {
+                if v != nil {
+                    res[i] = v.(TargetedChatMessageable)
+                }
+            }
+            m.SetTargetedMessages(res)
         }
         return nil
     }
@@ -321,6 +357,18 @@ func (m *Chat) GetMessages()([]ChatMessageable) {
     }
     return nil
 }
+// GetMigrationMode gets the migrationMode property value. Indicates whether a chat is in migration mode. This value is null for chats that never entered migration mode. The possible values are: inProgress, completed, unknownFutureValue.
+// returns a *MigrationMode when successful
+func (m *Chat) GetMigrationMode()(*MigrationMode) {
+    val, err := m.GetBackingStore().Get("migrationMode")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*MigrationMode)
+    }
+    return nil
+}
 // GetOnlineMeetingInfo gets the onlineMeetingInfo property value. Represents details about an online meeting. If the chat isn't associated with an online meeting, the property is empty. Read-only.
 // returns a TeamworkOnlineMeetingInfoable when successful
 func (m *Chat) GetOnlineMeetingInfo()(TeamworkOnlineMeetingInfoable) {
@@ -330,6 +378,18 @@ func (m *Chat) GetOnlineMeetingInfo()(TeamworkOnlineMeetingInfoable) {
     }
     if val != nil {
         return val.(TeamworkOnlineMeetingInfoable)
+    }
+    return nil
+}
+// GetOriginalCreatedDateTime gets the originalCreatedDateTime property value. Timestamp of the original creation time for the chat. The value is null if the chat never entered migration mode.
+// returns a *Time when successful
+func (m *Chat) GetOriginalCreatedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time) {
+    val, err := m.GetBackingStore().Get("originalCreatedDateTime")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
     }
     return nil
 }
@@ -366,6 +426,18 @@ func (m *Chat) GetTabs()([]TeamsTabable) {
     }
     if val != nil {
         return val.([]TeamsTabable)
+    }
+    return nil
+}
+// GetTargetedMessages gets the targetedMessages property value. The targetedMessages property
+// returns a []TargetedChatMessageable when successful
+func (m *Chat) GetTargetedMessages()([]TargetedChatMessageable) {
+    val, err := m.GetBackingStore().Get("targetedMessages")
+    if err != nil {
+        panic(err)
+    }
+    if val != nil {
+        return val.([]TargetedChatMessageable)
     }
     return nil
 }
@@ -490,8 +562,21 @@ func (m *Chat) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6c010c49
             return err
         }
     }
+    if m.GetMigrationMode() != nil {
+        cast := (*m.GetMigrationMode()).String()
+        err = writer.WriteStringValue("migrationMode", &cast)
+        if err != nil {
+            return err
+        }
+    }
     {
         err = writer.WriteObjectValue("onlineMeetingInfo", m.GetOnlineMeetingInfo())
+        if err != nil {
+            return err
+        }
+    }
+    {
+        err = writer.WriteTimeValue("originalCreatedDateTime", m.GetOriginalCreatedDateTime())
         if err != nil {
             return err
         }
@@ -528,6 +613,18 @@ func (m *Chat) Serialize(writer i878a80d2330e89d26896388a3f487eef27b0a0e6c010c49
             }
         }
         err = writer.WriteCollectionOfObjectValues("tabs", cast)
+        if err != nil {
+            return err
+        }
+    }
+    if m.GetTargetedMessages() != nil {
+        cast := make([]i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable, len(m.GetTargetedMessages()))
+        for i, v := range m.GetTargetedMessages() {
+            if v != nil {
+                cast[i] = v.(i878a80d2330e89d26896388a3f487eef27b0a0e6c010c493bf80be1452208f91.Parsable)
+            }
+        }
+        err = writer.WriteCollectionOfObjectValues("targetedMessages", cast)
         if err != nil {
             return err
         }
@@ -614,9 +711,23 @@ func (m *Chat) SetMessages(value []ChatMessageable)() {
         panic(err)
     }
 }
+// SetMigrationMode sets the migrationMode property value. Indicates whether a chat is in migration mode. This value is null for chats that never entered migration mode. The possible values are: inProgress, completed, unknownFutureValue.
+func (m *Chat) SetMigrationMode(value *MigrationMode)() {
+    err := m.GetBackingStore().Set("migrationMode", value)
+    if err != nil {
+        panic(err)
+    }
+}
 // SetOnlineMeetingInfo sets the onlineMeetingInfo property value. Represents details about an online meeting. If the chat isn't associated with an online meeting, the property is empty. Read-only.
 func (m *Chat) SetOnlineMeetingInfo(value TeamworkOnlineMeetingInfoable)() {
     err := m.GetBackingStore().Set("onlineMeetingInfo", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetOriginalCreatedDateTime sets the originalCreatedDateTime property value. Timestamp of the original creation time for the chat. The value is null if the chat never entered migration mode.
+func (m *Chat) SetOriginalCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)() {
+    err := m.GetBackingStore().Set("originalCreatedDateTime", value)
     if err != nil {
         panic(err)
     }
@@ -638,6 +749,13 @@ func (m *Chat) SetPinnedMessages(value []PinnedChatMessageInfoable)() {
 // SetTabs sets the tabs property value. A collection of all the tabs in the chat. Nullable.
 func (m *Chat) SetTabs(value []TeamsTabable)() {
     err := m.GetBackingStore().Set("tabs", value)
+    if err != nil {
+        panic(err)
+    }
+}
+// SetTargetedMessages sets the targetedMessages property value. The targetedMessages property
+func (m *Chat) SetTargetedMessages(value []TargetedChatMessageable)() {
+    err := m.GetBackingStore().Set("targetedMessages", value)
     if err != nil {
         panic(err)
     }
@@ -681,10 +799,13 @@ type Chatable interface {
     GetLastUpdatedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
     GetMembers()([]ConversationMemberable)
     GetMessages()([]ChatMessageable)
+    GetMigrationMode()(*MigrationMode)
     GetOnlineMeetingInfo()(TeamworkOnlineMeetingInfoable)
+    GetOriginalCreatedDateTime()(*i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)
     GetPermissionGrants()([]ResourceSpecificPermissionGrantable)
     GetPinnedMessages()([]PinnedChatMessageInfoable)
     GetTabs()([]TeamsTabable)
+    GetTargetedMessages()([]TargetedChatMessageable)
     GetTenantId()(*string)
     GetTopic()(*string)
     GetViewpoint()(ChatViewpointable)
@@ -697,10 +818,13 @@ type Chatable interface {
     SetLastUpdatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
     SetMembers(value []ConversationMemberable)()
     SetMessages(value []ChatMessageable)()
+    SetMigrationMode(value *MigrationMode)()
     SetOnlineMeetingInfo(value TeamworkOnlineMeetingInfoable)()
+    SetOriginalCreatedDateTime(value *i336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e.Time)()
     SetPermissionGrants(value []ResourceSpecificPermissionGrantable)()
     SetPinnedMessages(value []PinnedChatMessageInfoable)()
     SetTabs(value []TeamsTabable)()
+    SetTargetedMessages(value []TargetedChatMessageable)()
     SetTenantId(value *string)()
     SetTopic(value *string)()
     SetViewpoint(value ChatViewpointable)()
