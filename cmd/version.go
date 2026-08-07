@@ -12,8 +12,6 @@ import (
 	"os"
 	"runtime"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 )
 
@@ -25,11 +23,11 @@ var ReleaseVer, ReleaseDate, GitCommit string
 
 var versionCmd = &cobra.Command{
 	Use: "version",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if os.Getenv("TF_PLUGIN_MAGIC_COOKIE") != "" {
 			// Terraform expects this output to look like actual Azure CLI JSON output
 			fmt.Println(`{"azure-cli": "2.32.0"}`)
-			return
+			return nil
 		}
 		ver, err := json.MarshalIndent(struct {
 			Version, Date, Commit, Runtime string
@@ -37,8 +35,9 @@ var versionCmd = &cobra.Command{
 			ReleaseVer, ReleaseDate, GitCommit, runtime.Version(),
 		}, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(ver))
+		return nil
 	},
 }

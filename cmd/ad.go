@@ -10,8 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
@@ -32,17 +30,21 @@ var adSignedInUserCmd = &cobra.Command{
 	Short:     "Show graph information about current signed-in user in CLI.",
 	ValidArgs: []string{"show"},
 	Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		switch args[0] {
 		case "show":
-			u := az.GetSignedInUser(cmd.Context(), "")
+			u, err := az.GetSignedInUser(cmd.Context(), "")
+			if err != nil {
+				return err
+			}
 			jsonBytes, err := json.MarshalIndent(u, "", "  ")
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			fmt.Println(string(jsonBytes))
+			return nil
 		default:
-			log.Fatalln("Unsupported argument:", args[0])
+			return fmt.Errorf("unsupported argument: %s", args[0])
 		}
 	},
 }

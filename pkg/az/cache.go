@@ -195,7 +195,7 @@ func (l LocalCreds) AssertionForUser(user string) string {
 		if strings.EqualFold(a.Username, user) {
 			for _, t := range l.IdToken {
 				if t.HomeAccountID == a.HomeAccountID {
-					log.Info("HIT!")
+					log.Debugln("id token cache hit")
 					return t.Secret
 				}
 			}
@@ -205,27 +205,19 @@ func (l LocalCreds) AssertionForUser(user string) string {
 	return ""
 }
 
+// LoadLocalCreds parses the token cache, yielding the zero value when it is
+// absent or unreadable. A malformed cache is a recoverable condition: the caller
+// simply has no cached identities and can sign in again, so it must not end the
+// process.
 func LoadLocalCreds() (creds LocalCreds) {
 	out, err := os.ReadFile(cachePath())
 	if err != nil {
-		// log.Debugln(err)
+		log.Debugf("token cache unreadable: %v", err)
 		return
 	}
 	if err = json.Unmarshal(out, &creds); err != nil {
-		log.Fatal(err)
+		log.Debugf("token cache malformed, treating as empty: %v", err)
+		return LocalCreds{}
 	}
 	return
-}
-
-func UserForTenant(tenant string) string {
-	var common string
-	for _, a := range LoadLocalCreds().Account {
-		switch a.Realm {
-		case tenant:
-			return a.Username
-		case "common", "organizations":
-			common = a.Username
-		}
-	}
-	return common
 }

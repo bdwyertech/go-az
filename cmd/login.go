@@ -20,6 +20,7 @@ import (
 
 func init() {
 	loginCmd.Flags().StringP("scope", "", "", "Used in the /authorize request. It can cover only one static resource.")
+	loginCmd.Flags().BoolP("force", "", false, "Always prompt for a fresh sign-in, ignoring any cached token.")
 	loginCmd.Flags().StringP("tenant", "t", "", "Tenant ID for which the token is acquired. Only available for user and service principal account, not for MSI or Cloud Shell account.")
 	// loginCmd.Flags().BoolP("allow-no-subscriptions", "", false, "Support access tenants without subscriptions.")
 	// loginCmd.Flags().BoolP("use-device-code", "", false, "Use CLI's old authentication flow based on device code.")
@@ -34,23 +35,37 @@ func init() {
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to Azure.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		force, _ := cmd.Flags().GetBool("force")
 		opts := az.AccessTokenOptions{
-			Tenant: viper.GetString("tenant"),
+			Tenant:            viper.GetString("tenant"),
+			PreferredUsername: accountHint(cmd),
+			ForceInteractive:  force,
 		}
 		if scope := viper.GetString("scope"); scope != "" {
 			opts.Scope = append(opts.Scope, scope)
 		}
 
-		_, err := az.GetAccessToken(cmd.Context(), opts)
+		tok, err := az.GetAccessToken(cmd.Context(), opts)
 		if err != nil {
-			log.Fatal(err)
+			// A failed login must change nothing, so the active user is only
+			// recorded after the exchange succeeds.
+			return err
 		}
-		s := az.ListSubscriptionsCLI(cmd.Context(), true)
+		if err := az.RecordActiveAccount(cmd.Context(), tok.Account()); err != nil {
+			log.Warnf("unable to record the active user: %v", err)
+		}
+		// A partial enumeration is still worth printing, so a listing error is
+		// reported without discarding the subscriptions that did come back.
+		s, err := az.ListSubscriptionsCLI(cmd.Context(), true)
+		if err != nil {
+			log.Warnf("unable to enumerate every subscription: %v", err)
+		}
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(jsonBytes))
+		return nil
 	},
 }

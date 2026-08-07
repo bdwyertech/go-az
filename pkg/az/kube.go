@@ -42,13 +42,15 @@ func GetKubeCred(ctx context.Context, opts AccessTokenOptions) (token kubeExecCr
 	}
 
 	popts := policy.TokenRequestOptions{
-		Scopes: opts.Scope,
-	}
-	if opts.Resource != "" {
-		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
+		Scopes: withScope(opts.Scope, opts.Resource),
 	}
 
-	t, err := GetToken(ctx, TokenOptions{popts, opts.Client, opts.Tenant})
+	t, err := GetToken(ctx, TokenOptions{
+		TokenRequestOptions: popts,
+		ClientID:            opts.Client,
+		TenantID:            opts.Tenant,
+		PreferredUsername:   opts.PreferredUsername,
+	})
 	if err != nil {
 		return
 	}

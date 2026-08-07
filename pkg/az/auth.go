@@ -3,7 +3,6 @@ package az
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
 	"time"
 
@@ -21,6 +20,9 @@ import (
 // TokenCredential represents a credential capable of providing an OAuth token.
 type TokenCredential struct {
 	ClientID, TenantID string
+	// PreferredUsername is the Account Hint for this credential. It selects
+	// among cached accounts and never triggers a new sign-in on its own.
+	PreferredUsername string
 }
 
 // GetToken requests an access token for the specified set of scopes.
@@ -28,7 +30,12 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 	// if options.TenantID == "" && c.TenantID != "" {
 	// 	options.TenantID = c.TenantID
 	// }
-	token, err := GetToken(ctx, TokenOptions{options, c.ClientID, c.TenantID})
+	token, err := GetToken(ctx, TokenOptions{
+		TokenRequestOptions: options,
+		ClientID:            c.ClientID,
+		TenantID:            c.TenantID,
+		PreferredUsername:   c.PreferredUsername,
+	})
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
@@ -42,6 +49,12 @@ func (c TokenCredential) GetToken(ctx context.Context, options policy.TokenReque
 type TokenOptions struct {
 	policy.TokenRequestOptions
 	ClientID, TenantID string
+	// PreferredUsername is the Account Hint used to pick one cached account.
+	PreferredUsername string
+	// ForceInteractive skips every cache-only path so a fresh sign-in always
+	// prompts. Existing cached accounts survive: MSAL adds to the cache rather
+	// than replacing it, so a forced login never signs the other users out.
+	ForceInteractive bool
 }
 
 // GetToken requests an access token for the specified set of scopes.
@@ -58,16 +71,26 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 		options.ClientID = AZ_CLIENT_ID
 	}
 
+	// GetToken takes options by value, but the Scopes slice header is shared with
+	// the caller. Replace it with a private copy before anything downstream can
+	// append through it.
 	if len(options.Scopes) == 0 {
 		options.Scopes = []string{
 			azure.PublicCloud.ServiceManagementEndpoint + "/.default", // https://management.core.windows.net//.default
 		}
+	} else {
+		options.Scopes = dedupeScopes(options.Scopes)
 	}
-	// Step 1: attempt a cache-only acquisition.
-	if token, err = acquireSilent(ctx, options); err == nil {
+	// Step 1: attempt a cache-only acquisition, unless the caller demanded a
+	// fresh prompt. A forced login must not be satisfied by a cached token, so
+	// the silent path is skipped rather than merely ignored on failure.
+	if options.ForceInteractive {
+		log.Debugln("Forced interactive login: skipping cached tokens")
+	} else if token, err = acquireSilent(ctx, options); err == nil {
 		return
+	} else {
+		log.Debugln("Silent token acquisition failed:", err.Error())
 	}
-	log.Debugln("Silent token acquisition failed:", err.Error())
 
 	// Step 2: serialize interactive prompts across concurrent tooling.
 	lockPath, lerr := interactiveLockPath()
@@ -79,9 +102,11 @@ func GetToken(ctx context.Context, options TokenOptions) (token public.AuthResul
 	// Step 3: retry silently while holding the lock, so a token written by
 	// whichever caller won the race is observed instead of prompting again.
 	err = withExclusiveLock(ctx, lockPath, func() error {
-		if t, serr := acquireSilent(ctx, options); serr == nil {
-			token = t
-			return nil
+		if !options.ForceInteractive {
+			if t, serr := acquireSilent(ctx, options); serr == nil {
+				token = t
+				return nil
+			}
 		}
 		// Step 4: fall through to interactive only if that still fails.
 		token, err = acquireInteractive(ctx, options)
@@ -112,33 +137,23 @@ func acquireInteractive(ctx context.Context, options TokenOptions) (token public
 		return code.AuthenticationResult(ctx)
 	}
 
-	var port int
-	port, err = getFreePort()
-	if err != nil {
-		return
-	}
-
-	return pubClient.AcquireTokenInteractive(ctx, options.Scopes, public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)), public.WithTenantID(options.TenantID))
+	// MSAL binds the redirect listener itself, so the port is reserved, released,
+	// and handed over; a lost race is retried on a fresh port rather than failing
+	// the whole login.
+	err = withRedirectPort(ctx, func(port int) error {
+		var berr error
+		token, berr = pubClient.AcquireTokenInteractive(ctx, options.Scopes,
+			public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)),
+			public.WithTenantID(options.TenantID))
+		return berr
+	})
+	return
 }
 
-func getFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
-}
-
-func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAuthorizer {
+func GetAuthorizer(ctx context.Context, options TokenOptions) (*autorest.BearerAuthorizer, error) {
 	token, err := GetToken(ctx, options)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	cliToken := cli.Token{
 		AccessToken: token.AccessToken,
@@ -148,19 +163,19 @@ func GetAuthorizer(ctx context.Context, options TokenOptions) *autorest.BearerAu
 
 	adalToken, err := cliToken.ToADALToken()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	oauthCfg, err := adal.NewOAuthConfig(microsoftAuthorityHost, token.IDToken.TenantID)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	t, err := adal.NewServicePrincipalTokenFromManualToken(*oauthCfg, token.IDToken.Audience, microsoftAuthorityHost, adalToken)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return autorest.NewBearerAuthorizer(t)
+	return autorest.NewBearerAuthorizer(t), nil
 }
 
 type AccessToken struct {
@@ -169,6 +184,14 @@ type AccessToken struct {
 	Subscription string `json:"subscription,omitempty"`
 	Tenant       string `json:"tenant"`
 	TokenType    string `json:"tokenType"`
+	// account is the identity MSAL actually authenticated. It is unexported so
+	// the JSON stays byte-compatible with the Microsoft Azure CLI's output.
+	account public.Account
+}
+
+// Account reports the identity this token was issued to.
+func (t AccessToken) Account() public.Account {
+	return t.account
 }
 
 type AccessTokenOptions struct {
@@ -178,18 +201,27 @@ type AccessTokenOptions struct {
 	Scope          []string
 	Tenant         string
 	Client         string
+	// PreferredUsername is the Account Hint for this invocation.
+	PreferredUsername string
+	// ForceInteractive demands a fresh sign-in even when a token is cached.
+	ForceInteractive bool
 }
 
 func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessToken, err error) {
 	popts := policy.TokenRequestOptions{
-		Scopes: opts.Scope,
+		// withScope copies, so appending the resource scope cannot write back
+		// into the caller's slice.
+		Scopes: withScope(opts.Scope, opts.Resource),
 		// TenantID: opts.Tenant,
 	}
-	if opts.Resource != "" {
-		popts.Scopes = append(popts.Scopes, opts.Resource+"/.default")
-	}
 
-	t, err := GetToken(ctx, TokenOptions{popts, opts.Client, opts.Tenant})
+	t, err := GetToken(ctx, TokenOptions{
+		TokenRequestOptions: popts,
+		ClientID:            opts.Client,
+		TenantID:            opts.Tenant,
+		PreferredUsername:   opts.PreferredUsername,
+		ForceInteractive:    opts.ForceInteractive,
+	})
 	if err != nil {
 		return
 	}
@@ -199,6 +231,7 @@ func GetAccessToken(ctx context.Context, opts AccessTokenOptions) (token AccessT
 		Subscription: opts.SubscriptionID,
 		Tenant:       t.IDToken.TenantID,
 		TokenType:    "Bearer",
+		account:      t.Account,
 	}
 	return
 }

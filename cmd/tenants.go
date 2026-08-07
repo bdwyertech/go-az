@@ -30,23 +30,21 @@ var tenantsCmd = &cobra.Command{
 	Use:   "tenants",
 	Short: "List tenant details",
 	Long:  `List all Azure AD tenants you have access to with subscription counts`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		details := viper.GetBool("detailed")
 
 		if details {
 			// Use the detailed Graph API version
-			organizations, err := az.ListOrganizations()
+			organizations, err := az.ListOrganizations(cmd.Context())
 			if err != nil {
-				fmt.Printf("Error listing organizations: %v\n", err)
-				return
+				return fmt.Errorf("listing organizations: %w", err)
 			}
 
 			if jsonOutput := viper.GetBool("json"); jsonOutput {
 				enc := json.NewEncoder(os.Stdout)
 				enc.SetIndent("", "  ")
 				if err := enc.Encode(organizations); err != nil {
-					fmt.Printf("Error marshaling JSON: %v\n", err)
-					return
+					return fmt.Errorf("encoding organizations: %w", err)
 				}
 			} else {
 				table := tablewriter.NewWriter(os.Stdout)
@@ -67,14 +65,16 @@ var tenantsCmd = &cobra.Command{
 			}
 		} else {
 			// Use the simple version
-			tenantDetails := az.ListTenantDetails()
+			tenantDetails, err := az.ListTenantDetails(cmd.Context())
+			if err != nil {
+				return fmt.Errorf("listing tenants: %w", err)
+			}
 
 			if jsonOutput := viper.GetBool("json"); jsonOutput {
 				enc := json.NewEncoder(os.Stdout)
 				enc.SetIndent("", "  ")
 				if err := enc.Encode(tenantDetails); err != nil {
-					fmt.Printf("Error marshaling JSON: %v\n", err)
-					return
+					return fmt.Errorf("encoding tenants: %w", err)
 				}
 			} else {
 				table := tablewriter.NewWriter(os.Stdout)
@@ -98,5 +98,6 @@ var tenantsCmd = &cobra.Command{
 				table.Render()
 			}
 		}
+		return nil
 	},
 }

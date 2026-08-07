@@ -33,29 +33,18 @@ func BuildProfile(ctx context.Context) error {
 		return err
 	}
 	return withExclusiveLock(ctx, f+".lock", func() error {
-		var defaultSub string
 		p, _ := cli.LoadProfile(f)
-		for _, s := range p.Subscriptions {
-			if s.IsDefault {
-				defaultSub = s.ID
-				break
-			}
-		}
 		if p.InstallationID == "" {
 			p.InstallationID = uuid.NewString()
 		}
-		p.Subscriptions = ListSubscriptions()
-
-		if defaultSub != "" {
-			for i, s := range p.Subscriptions {
-				if s.ID == defaultSub {
-					p.Subscriptions[i].IsDefault = true
-					break
-				}
-			}
-		} else if len(p.Subscriptions) > 0 {
-			p.Subscriptions[0].IsDefault = true
+		// Enumeration only sees what the Selected Account can reach, so union it
+		// with the existing profile. MergeSubscriptions also settles ordering and
+		// the single surviving default.
+		discovered, err := ListSubscriptions(ctx)
+		if err != nil {
+			return err
 		}
+		p.Subscriptions = MergeSubscriptions(p.Subscriptions, discovered)
 
 		return WriteProfile(p, f)
 	})

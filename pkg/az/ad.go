@@ -3,23 +3,26 @@ package az
 import (
 	"context"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 )
 
-func GetSignedInUser(ctx context.Context, tenant string) graphrbac.User {
-	cclient := graphrbac.NewSignedInUserClient(tenant)
-	cclient.Authorizer = GetAuthorizer(ctx, TokenOptions{
-		policy.TokenRequestOptions{Scopes: []string{graphrbac.DefaultBaseURI + "/.default"}},
-		AZ_CLIENT_ID,
-		tenant,
+// GetSignedInUser resolves the directory object for the identity this
+// invocation authenticated as. Errors are returned rather than fatal so a
+// caller can fall back or report cleanly.
+func GetSignedInUser(ctx context.Context, tenant string) (graphrbac.User, error) {
+	auth, err := GetAuthorizer(ctx, TokenOptions{
+		TokenRequestOptions: policy.TokenRequestOptions{
+			Scopes: []string{graphrbac.DefaultBaseURI + "/.default"},
+		},
+		ClientID: AZ_CLIENT_ID,
+		TenantID: tenant,
 	})
-	u, err := cclient.Get(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return graphrbac.User{}, err
 	}
 
-	return u
+	cclient := graphrbac.NewSignedInUserClient(tenant)
+	cclient.Authorizer = auth
+	return cclient.Get(ctx)
 }

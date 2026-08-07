@@ -10,8 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
@@ -31,21 +29,23 @@ func init() {
 var kubeCredCmd = &cobra.Command{
 	Use:   "kube-cred",
 	Short: "Get a token for accessing Kubernetes",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := az.GetKubeCred(cmd.Context(), az.AccessTokenOptions{
-			Resource:       viper.GetString("resource"),
-			Scope:          viper.GetStringSlice("scope"),
-			SubscriptionID: viper.GetString("subscription"),
-			Tenant:         viper.GetString("tenant"),
-			Client:         viper.GetString("client"),
+			Resource:          viper.GetString("resource"),
+			Scope:             viper.GetStringSlice("scope"),
+			SubscriptionID:    viper.GetString("subscription"),
+			Tenant:            viper.GetString("tenant"),
+			Client:            viper.GetString("client"),
+			PreferredUsername: accountHint(cmd),
 		})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		jsonBytes, err := json.MarshalIndent(c, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(jsonBytes))
+		return nil
 	},
 }

@@ -8,10 +8,9 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/bdwyertech/go-az/pkg/az"
 
@@ -36,7 +35,9 @@ func init() {
 		accountCachedCmd,
 		accountGetAccessTokenCmd,
 		accountListCmd,
+		accountSetUserCmd,
 		accountShowCmd,
+		accountShowUserCmd,
 	)
 	rootCmd.AddCommand(accountCmd)
 }
@@ -50,11 +51,16 @@ var accountShowCmd = &cobra.Command{
 	Use:   "show",
 	Short: "Get the details of a subscription.",
 	// List Current Subscription
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		subs, err := az.ListSubscriptionsCLI(cmd.Context(), false)
+		if err != nil {
+			return err
+		}
+
 		var sub interface{}
 		subName, subId := viper.GetString("name"), viper.GetString("subscription")
 		if subName != "" || subId != "" {
-			for _, s := range az.ListSubscriptionsCLI(cmd.Context(), false) {
+			for _, s := range subs {
 				if subId != "" && strings.EqualFold(subId, s.ID) {
 					sub = s
 					break
@@ -65,10 +71,10 @@ var accountShowCmd = &cobra.Command{
 				}
 			}
 			if sub == nil {
-				log.Fatal("Unable to find matching subscription!")
+				return errors.New("unable to find matching subscription")
 			}
 		} else {
-			for _, s := range az.ListSubscriptionsCLI(cmd.Context(), false) {
+			for _, s := range subs {
 				if s.IsDefault {
 					sub = s
 					break
@@ -78,9 +84,10 @@ var accountShowCmd = &cobra.Command{
 
 		jsonBytes, err := json.MarshalIndent(sub, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(jsonBytes))
+		return nil
 	},
 }
 
@@ -88,54 +95,120 @@ var accountListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
-	Run: func(cmd *cobra.Command, args []string) {
-		s := az.ListSubscriptionsCLI(cmd.Context(), viper.GetBool("refresh"))
+	RunE: func(cmd *cobra.Command, args []string) error {
+		s, err := az.ListSubscriptionsCLI(cmd.Context(), viper.GetBool("refresh"))
+		if err != nil {
+			return err
+		}
 		jsonBytes, err := json.MarshalIndent(s, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(jsonBytes))
+		return nil
 	},
 }
 
 var accountGetAccessTokenCmd = &cobra.Command{
 	Use:   "get-access-token",
 	Short: "Get a token for utilities to access Azure.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
-			Resource:       viper.GetString("resource"),
-			Scope:          viper.GetStringSlice("scope"),
-			SubscriptionID: viper.GetString("subscription"),
-			Tenant:         viper.GetString("tenant"),
-			Client:         viper.GetString("client"),
+			Resource:          viper.GetString("resource"),
+			Scope:             viper.GetStringSlice("scope"),
+			SubscriptionID:    viper.GetString("subscription"),
+			Tenant:            viper.GetString("tenant"),
+			Client:            viper.GetString("client"),
+			PreferredUsername: accountHint(cmd),
 		})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		jsonBytes, err := json.MarshalIndent(u, "", "  ")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fmt.Println(string(jsonBytes))
+		return nil
 	},
 }
 
 var accountCachedCmd = &cobra.Command{
 	Use:   "cached",
 	Short: "List cached accounts.",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		cached, err := az.GetCachedAccounts(cmd.Context())
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if len(cached) == 0 {
 			fmt.Println("[]")
-		} else {
-			jsonBytes, err := json.MarshalIndent(cached, "", "  ")
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(string(jsonBytes))
+			return nil
 		}
+		jsonBytes, err := json.MarshalIndent(cached, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsonBytes))
+		return nil
+	},
+}
+
+// accountShowUserCmd mirrors the verb-first naming of the Microsoft Azure CLI's
+// own `az account` subcommands. Microsoft reports the signed-in identity as the
+// `user` block inside `az account show`; because this tool keeps several
+// identities at once, that single field is not enough to describe the cache.
+var accountShowUserCmd = &cobra.Command{
+	Use:   "show-user",
+	Short: "Show the active user and every cached user.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cached, err := az.GetCachedAccounts(cmd.Context())
+		if err != nil {
+			return err
+		}
+
+		report, err := az.BuildAccountReport(cmd.Context(), cached)
+		if err != nil {
+			return err
+		}
+
+		// A missing or stale pointer is a warning, not a failure: the remaining
+		// selection precedence still yields a usable account.
+		if report.ActiveHomeAccountID == "" {
+			fmt.Fprintln(cmd.ErrOrStderr(), "warning: no active user is recorded; run 'az account set-user'")
+		} else if !report.ActiveIsCached {
+			fmt.Fprintf(cmd.ErrOrStderr(), "warning: active user %q is no longer in the token cache\n", report.ActiveUsername)
+		}
+
+		jsonBytes, err := json.MarshalIndent(report, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), string(jsonBytes))
+		return nil
+	},
+}
+
+var accountSetUserCmd = &cobra.Command{
+	Use:   "set-user",
+	Short: "Record the active user without acquiring a token.",
+	Args:  cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		hint := accountHint(cmd)
+		if len(args) == 1 {
+			hint = args[0]
+		}
+
+		cached, err := az.GetCachedAccounts(cmd.Context())
+		if err != nil {
+			return err
+		}
+
+		selected, err := az.SetActiveAccount(cmd.Context(), cached, hint)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(cmd.OutOrStdout(), "active user is now %s\n", selected.PreferredUsername)
+		return nil
 	},
 }

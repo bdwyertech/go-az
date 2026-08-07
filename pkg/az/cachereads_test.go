@@ -47,14 +47,6 @@ var _ = Describe("credential read paths", func() {
 		Expect(LoadLocalCreds().First()).NotTo(BeNil())
 	})
 
-	It("prefers the account whose realm matches the tenant", func() {
-		Expect(UserForTenant("11111111-1111-1111-1111-111111111111")).To(Equal("other@example.com"))
-	})
-
-	It("falls back to a multi-tenant account when no realm matches", func() {
-		Expect(UserForTenant("99999999-9999-9999-9999-999999999999")).To(Equal("User@Example.com"))
-	})
-
 	It("returns an empty struct when no cache file exists", func() {
 		Expect(os.Remove(cachePath())).To(Succeed())
 		Expect(LoadLocalCreds().Account).To(BeEmpty())
@@ -71,7 +63,6 @@ var _ = Describe("credential read paths", func() {
 					creds := LoadLocalCreds()
 					Expect(creds.First()).NotTo(BeNil())
 					Expect(creds.AssertionForUser("user@example.com")).To(Equal("assertion-1"))
-					Expect(UserForTenant("organizations")).NotTo(BeEmpty())
 				}
 			}()
 		}

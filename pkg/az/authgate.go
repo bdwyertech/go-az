@@ -8,6 +8,7 @@ import (
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	log "github.com/sirupsen/logrus"
 )
 
 // interactiveLockPath is the advisory lock serializing interactive browser
@@ -44,8 +45,9 @@ func newPubClient(options TokenOptions, t *http.Transport) (public.Client, error
 	)
 }
 
-// acquireSilent attempts a cache-only token acquisition, preferring an account
-// whose realm matches the requested tenant.
+// acquireSilent attempts a cache-only token acquisition against exactly one
+// cached account, chosen by ResolveAccount from the Account Hint, the Active
+// Account, and the requested tenant.
 func acquireSilent(ctx context.Context, options TokenOptions) (public.AuthResult, error) {
 	t := silentTransport()
 	defer t.CloseIdleConnections()
@@ -57,14 +59,18 @@ func acquireSilent(ctx context.Context, options TokenOptions) (public.AuthResult
 
 	opts := []public.AcquireSilentOption{}
 	if accounts, aerr := pubClient.Accounts(ctx); aerr == nil && len(accounts) > 0 {
-		selected := &accounts[0]
-		for i := range accounts {
-			if accounts[i].Realm == options.TenantID {
-				selected = &accounts[i]
-				break
-			}
+		var active string
+		if s, serr := LoadState(ctx); serr == nil {
+			active = s.ActiveHomeAccountID
+		} else {
+			log.Debugf("unable to load active account state: %v", serr)
 		}
-		opts = append(opts, public.WithSilentAccount(*selected))
+
+		selected, rerr := ResolveAccount(accounts, options.PreferredUsername, active, options.TenantID)
+		if rerr != nil {
+			return public.AuthResult{}, rerr
+		}
+		opts = append(opts, public.WithSilentAccount(selected))
 	}
 	opts = append(opts, public.WithTenantID(options.TenantID))
 
