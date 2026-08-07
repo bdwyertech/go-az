@@ -1,0 +1,21 @@
+code-samples/
+
+# Compiled binaries. The module name doubles as the default binary name, so an
+# accidental `go build` in the repo root would otherwise stage an executable.
+/az
+/argtester/argtester
+dist/
+
+# Scratch artifacts left behind by manual runs and debugging sessions.
+*.bak
+*.debug
+.argsout
+.envout
+.test-ini
+
+# Lock file created by the credential file locking helpers.
+.lock
+
+# Terraform state and provider caches from the local test harness.
+.terraform/
+.terraform.lock.hcl
