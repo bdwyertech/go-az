@@ -1,0 +1,41 @@
+version: "2"
+
+# Vendored dependencies and the standalone modules under examples/ and test/ are
+# not part of this module's source, so linting is scoped to the code we own.
+run:
+  modules-download-mode: vendor
+
+linters:
+  default: standard
+  enable:
+    # An unchecked error is the exact class of defect this project cares about:
+    # a swallowed failure from a credential file read leaves the caller acting
+    # on empty data.
+    - errcheck
+    # A context that is created but never cancelled leaks the goroutine that
+    # watches it, which matters for the bounded enumeration paths.
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
+      - examples
+      - test
+    rules:
+      # Specs assert on behaviour, so a deliberate helper panic or an ignored
+      # error inside a fixture is intentional rather than a defect.
+      - path: _test\.go
+        linters:
+          - errcheck
+
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    paths:
+      - vendor
+      - examples
+      - test
