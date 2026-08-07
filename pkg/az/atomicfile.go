@@ -18,12 +18,12 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 	tmp := f.Name()
 
 	if err = writeAndClose(f, data, perm); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 
 	if err = os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	return nil
@@ -31,15 +31,15 @@ func WriteFileAtomic(path string, data []byte, perm os.FileMode) error {
 
 func writeAndClose(f *os.File, data []byte, perm os.FileMode) error {
 	if _, err := f.Write(data); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Sync(); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	if err := f.Chmod(perm); err != nil {
-		f.Close()
+		_ = f.Close()
 		return err
 	}
 	return f.Close()

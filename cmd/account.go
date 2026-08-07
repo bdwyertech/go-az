@@ -175,16 +175,16 @@ var accountShowUserCmd = &cobra.Command{
 		// A missing or stale pointer is a warning, not a failure: the remaining
 		// selection precedence still yields a usable account.
 		if report.ActiveHomeAccountID == "" {
-			fmt.Fprintln(cmd.ErrOrStderr(), "warning: no active user is recorded; run 'az account set-user'")
+			_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "warning: no active user is recorded; run 'az account set-user'")
 		} else if !report.ActiveIsCached {
-			fmt.Fprintf(cmd.ErrOrStderr(), "warning: active user %q is no longer in the token cache\n", report.ActiveUsername)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "warning: active user %q is no longer in the token cache\n", report.ActiveUsername)
 		}
 
 		jsonBytes, err := json.MarshalIndent(report, "", "  ")
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(cmd.OutOrStdout(), string(jsonBytes))
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(jsonBytes))
 		return nil
 	},
 }
@@ -208,7 +208,7 @@ var accountSetUserCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "active user is now %s\n", selected.PreferredUsername)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "active user is now %s\n", selected.PreferredUsername)
 		return nil
 	},
 }

@@ -40,7 +40,7 @@ func withLock(ctx context.Context, lockPath string, shared bool, fn func() error
 	if err != nil {
 		return err
 	}
-	f.Close()
+	_ = f.Close()
 	if err = os.Chmod(lockPath, lockFileMode); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func withLock(ctx context.Context, lockPath string, shared bool, fn func() error
 	if err = acquire(ctx, l, shared); err != nil {
 		return err
 	}
-	defer l.Unlock()
+	defer func() { _ = l.Unlock() }()
 
 	return fn()
 }
@@ -77,7 +77,7 @@ func acquire(ctx context.Context, l *flock.Flock, shared bool) error {
 		// Release whatever the helper eventually acquires so no lock leaks.
 		go func() {
 			if err := <-done; err == nil {
-				l.Unlock()
+				_ = l.Unlock()
 			}
 		}()
 		return ctx.Err()

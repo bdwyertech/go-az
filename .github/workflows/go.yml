@@ -1,5 +1,19 @@
 name: Go
-on: [push]
+
+on:
+  workflow_dispatch:
+    inputs:
+      caller:
+        description: 'The invoker of the workflow'
+        required: false
+        default: ''
+  push:
+    branches: ['main']
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test

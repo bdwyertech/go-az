@@ -26,7 +26,7 @@ func init() {
 	// No shorthand: -u is reserved for the Azure CLI's own --username.
 	rootCmd.PersistentFlags().String("preferred-username", "",
 		"Select a cached account by username, object ID, or home account ID. Falls back to GO_AZ_USERNAME then AZURE_USERNAME.")
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	_ = viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 	cobra.OnInitialize(initConfig)
 }
 
@@ -59,7 +59,7 @@ var rootCmd = &cobra.Command{
 	Use:    "az",
 	Hidden: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		viper.BindPFlags(cmd.Flags())
+		_ = viper.BindPFlags(cmd.Flags())
 	},
 }
 

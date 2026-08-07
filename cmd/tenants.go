@@ -54,14 +54,14 @@ var tenantsCmd = &cobra.Command{
 				})
 
 				for _, org := range organizations {
-					table.Append([]string{
+					_ = table.Append([]string{
 						org.ID,
 						org.DisplayName,
 						org.DefaultDomain,
 						org.TenantType,
 					})
 				}
-				table.Render()
+				_ = table.Render()
 			}
 		} else {
 			// Use the simple version
@@ -89,13 +89,13 @@ var tenantsCmd = &cobra.Command{
 						hasResources = "Yes"
 					}
 
-					table.Append([]string{
+					_ = table.Append([]string{
 						detail.TenantID,
 						fmt.Sprintf("%d", detail.SubscriptionCount),
 						hasResources,
 					})
 				}
-				table.Render()
+				_ = table.Render()
 			}
 		}
 		return nil

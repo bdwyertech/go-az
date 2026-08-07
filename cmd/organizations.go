@@ -54,7 +54,7 @@ var organizationsCmd = &cobra.Command{
 					hasSubscriptions = "Yes"
 				}
 
-				table.Append([]string{
+				_ = table.Append([]string{
 					org.ID,
 					org.DisplayName,
 					org.DefaultDomain,
@@ -62,7 +62,7 @@ var organizationsCmd = &cobra.Command{
 					org.TenantType,
 				})
 			}
-			table.Render()
+			_ = table.Render()
 		}
 		return nil
 	},

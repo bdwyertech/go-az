@@ -31,7 +31,7 @@ func reservePort() (int, net.Listener, error) {
 	}
 	addr, ok := l.Addr().(*net.TCPAddr)
 	if !ok {
-		l.Close()
+		_ = l.Close()
 		return 0, nil, fmt.Errorf("reserving a redirect port: unexpected address type %T", l.Addr())
 	}
 	return addr.Port, l, nil
