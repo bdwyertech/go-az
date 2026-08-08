@@ -33,9 +33,18 @@ var tenantsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		details := viper.GetBool("detailed")
 
+		// Resolve once, before either branch, so both report and enumerate as
+		// the same identity and an unknown hint aborts before any output.
+		username, err := az.ResolveEnumerationIdentity(cmd.Context(),
+			az.NewEnumerator(), accountHint(cmd))
+		if err != nil {
+			return fmt.Errorf("selecting an account: %w", err)
+		}
+		emitAttribution(cmd, username)
+
 		if details {
 			// Use the detailed Graph API version
-			organizations, err := az.ListOrganizations(cmd.Context())
+			organizations, err := az.ListOrganizations(cmd.Context(), username)
 			if err != nil {
 				return fmt.Errorf("listing organizations: %w", err)
 			}
@@ -65,7 +74,7 @@ var tenantsCmd = &cobra.Command{
 			}
 		} else {
 			// Use the simple version
-			tenantDetails, err := az.ListTenantDetails(cmd.Context())
+			tenantDetails, err := az.ListTenantDetails(cmd.Context(), username)
 			if err != nil {
 				return fmt.Errorf("listing tenants: %w", err)
 			}

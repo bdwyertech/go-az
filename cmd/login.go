@@ -55,9 +55,13 @@ var loginCmd = &cobra.Command{
 		if err := az.RecordActiveAccount(cmd.Context(), tok.Account()); err != nil {
 			log.Warnf("unable to record the active user: %v", err)
 		}
+		// Scope the refresh to the identity that just authenticated rather than
+		// the raw hint: the hint may have been empty, and the account returned by
+		// the exchange is the authoritative answer to "who is this profile for".
+		//
 		// A partial enumeration is still worth printing, so a listing error is
 		// reported without discarding the subscriptions that did come back.
-		s, err := az.ListSubscriptionsCLI(cmd.Context(), true)
+		s, err := az.ListSubscriptionsCLI(cmd.Context(), true, tok.Account().PreferredUsername)
 		if err != nil {
 			log.Warnf("unable to enumerate every subscription: %v", err)
 		}

@@ -52,7 +52,13 @@ var accountShowCmd = &cobra.Command{
 	Short: "Get the details of a subscription.",
 	// List Current Subscription
 	RunE: func(cmd *cobra.Command, args []string) error {
-		subs, err := az.ListSubscriptionsCLI(cmd.Context(), false)
+		// The profile is a union across identities, so the same command shows
+		// different subscriptions depending on who is asking. Attribution is
+		// emitted before the payload so the reader can tell which view this is.
+		hint := accountHint(cmd)
+		emitAttribution(cmd, hint)
+
+		subs, err := az.ListSubscriptionsCLI(cmd.Context(), false, hint)
 		if err != nil {
 			return err
 		}
@@ -96,7 +102,10 @@ var accountListCmd = &cobra.Command{
 	Short: "Get a list of subscriptions for the logged in account.",
 	// List All Subscriptions
 	RunE: func(cmd *cobra.Command, args []string) error {
-		s, err := az.ListSubscriptionsCLI(cmd.Context(), viper.GetBool("refresh"))
+		hint := accountHint(cmd)
+		emitAttribution(cmd, hint)
+
+		s, err := az.ListSubscriptionsCLI(cmd.Context(), viper.GetBool("refresh"), hint)
 		if err != nil {
 			return err
 		}
@@ -113,13 +122,20 @@ var accountGetAccessTokenCmd = &cobra.Command{
 	Use:   "get-access-token",
 	Short: "Get a token for utilities to access Azure.",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Resolve first so a typo in --preferred-username is an error rather
+		// than a token minted for whichever identity the cache falls back to.
+		username, err := resolveHint(cmd)
+		if err != nil {
+			return err
+		}
+
 		u, err := az.GetAccessToken(cmd.Context(), az.AccessTokenOptions{
 			Resource:          viper.GetString("resource"),
 			Scope:             viper.GetStringSlice("scope"),
 			SubscriptionID:    viper.GetString("subscription"),
 			Tenant:            viper.GetString("tenant"),
 			Client:            viper.GetString("client"),
-			PreferredUsername: accountHint(cmd),
+			PreferredUsername: username,
 		})
 		if err != nil {
 			return err

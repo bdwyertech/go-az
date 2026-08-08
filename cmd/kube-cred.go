@@ -30,13 +30,21 @@ var kubeCredCmd = &cobra.Command{
 	Use:   "kube-cred",
 	Short: "Get a token for accessing Kubernetes",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// kubectl parses this command's stdout, so an unmatched hint has to
+		// abort before a token request rather than after a prompt or a
+		// wrong-identity token.
+		username, err := resolveHint(cmd)
+		if err != nil {
+			return err
+		}
+
 		c, err := az.GetKubeCred(cmd.Context(), az.AccessTokenOptions{
 			Resource:          viper.GetString("resource"),
 			Scope:             viper.GetStringSlice("scope"),
 			SubscriptionID:    viper.GetString("subscription"),
 			Tenant:            viper.GetString("tenant"),
 			Client:            viper.GetString("client"),
-			PreferredUsername: accountHint(cmd),
+			PreferredUsername: username,
 		})
 		if err != nil {
 			return err

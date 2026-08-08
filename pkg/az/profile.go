@@ -24,10 +24,14 @@ func profilePath() (string, error) {
 	return cli.ProfilePath()
 }
 
-// BuildProfile refreshes the Azure CLI profile. The whole read-modify-write
-// runs under one exclusive advisory lock so a concurrent go-az or Azure CLI
-// cannot interleave and lose the default-subscription selection.
-func BuildProfile(ctx context.Context) error {
+// BuildProfile refreshes the Azure CLI profile for the identity named by hint.
+// The whole read-modify-write runs under one exclusive advisory lock so a
+// concurrent go-az or Azure CLI cannot interleave and lose the
+// default-subscription selection.
+//
+// An empty hint means the Active Account, which is what an invocation without
+// --preferred-username asks for.
+func BuildProfile(ctx context.Context, hint string) error {
 	f, err := profilePath()
 	if err != nil {
 		return err
@@ -40,7 +44,7 @@ func BuildProfile(ctx context.Context) error {
 		// Enumeration only sees what the Selected Account can reach, so union it
 		// with the existing profile. MergeSubscriptions also settles ordering and
 		// the single surviving default.
-		discovered, err := ListSubscriptions(ctx)
+		discovered, err := ListSubscriptions(ctx, hint)
 		if err != nil {
 			return err
 		}

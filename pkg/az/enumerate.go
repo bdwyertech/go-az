@@ -18,6 +18,10 @@ import (
 //
 // Errors are memoised alongside results so a failure is not retried in a loop.
 type Enumerator struct {
+	// hint is the Account Hint this Enumerator is scoped to for its whole
+	// life; every credential it constructs carries this identity.
+	hint string
+
 	listTenants  func(context.Context) ([]*armsubscriptions.TenantIDDescription, error)
 	listSubs     func(context.Context, string) ([]*armsubscriptions.Subscription, error)
 	loadAccounts func(context.Context) ([]public.Account, error)
@@ -39,11 +43,23 @@ type Enumerator struct {
 	accountsErr  error
 }
 
-// NewEnumerator returns an Enumerator backed by the live Azure and cache calls.
+// NewEnumerator returns an Enumerator backed by the live Azure and cache
+// calls, unscoped to any identity.
 func NewEnumerator() *Enumerator {
+	return NewEnumeratorForAccount("")
+}
+
+// NewEnumeratorForAccount returns an Enumerator backed by the live Azure and
+// cache calls, scoped to hint for every credential it constructs.
+func NewEnumeratorForAccount(hint string) *Enumerator {
 	return &Enumerator{
-		listTenants:  ListTenants,
-		listSubs:     ListSubscriptionsForTenant,
+		hint: hint,
+		listTenants: func(ctx context.Context) ([]*armsubscriptions.TenantIDDescription, error) {
+			return ListTenants(ctx, hint)
+		},
+		listSubs: func(ctx context.Context, tenant string) ([]*armsubscriptions.Subscription, error) {
+			return ListSubscriptionsForTenant(ctx, tenant, hint)
+		},
 		loadAccounts: GetCachedAccounts,
 		subCalls:     map[string]int{},
 		subs:         map[string][]*armsubscriptions.Subscription{},

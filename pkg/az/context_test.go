@@ -55,10 +55,10 @@ var _ = Describe("Context propagation", func() {
 
 			// Before this change these paths called log.Fatal, which no caller
 			// and no spec could recover from.
-			_, err := ListTenants(ctx)
+			_, err := ListTenants(ctx, "")
 			Expect(err).To(HaveOccurred())
 
-			_, err = ListSubscriptionsForTenant(ctx, "t1")
+			_, err = ListSubscriptionsForTenant(ctx, "t1", "")
 			Expect(err).To(HaveOccurred())
 		})
 
@@ -66,7 +66,7 @@ var _ = Describe("Context propagation", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			cancel()
 
-			Expect(BuildProfile(ctx)).To(MatchError(context.Canceled))
+			Expect(BuildProfile(ctx, "")).To(MatchError(context.Canceled))
 		})
 	})
 })

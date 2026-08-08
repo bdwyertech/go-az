@@ -13,6 +13,15 @@ import (
 	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 )
 
+// newTenantsClient, newSubscriptionsClient and newGraphClient indirect the SDK
+// client constructors so specs can substitute a credential-recording double
+// without touching the enumeration logic itself.
+var (
+	newTenantsClient       = armsubscriptions.NewTenantsClient
+	newSubscriptionsClient = armsubscriptions.NewClient
+	newGraphClient         = msgraphsdk.NewGraphServiceClientWithCredentials
+)
+
 // Organization represents an Azure AD organization with detailed information
 type Organization struct {
 	ID                    string           `json:"id"`
@@ -34,13 +43,16 @@ type VerifiedDomain struct {
 // when asked, when it is missing, or when it turned out to be empty. Errors are
 // returned so a caller can react; ending the process here would strand the lock
 // files and deferred cleanup the credential paths rely on.
-func ListSubscriptionsCLI(ctx context.Context, refresh bool) ([]cli.Subscription, error) {
+//
+// Any rebuild is scoped to hint, so a refresh requested under one identity can
+// never re-enumerate as another one.
+func ListSubscriptionsCLI(ctx context.Context, refresh bool, hint string) ([]cli.Subscription, error) {
 	p, err := profilePath()
 	if err != nil {
 		return nil, err
 	}
 	if _, serr := os.Stat(p); errors.Is(serr, os.ErrNotExist) || refresh {
-		if err = BuildProfile(ctx); err != nil {
+		if err = BuildProfile(ctx, hint); err != nil {
 			return nil, err
 		}
 	}
@@ -48,22 +60,25 @@ func ListSubscriptionsCLI(ctx context.Context, refresh bool) ([]cli.Subscription
 	if err != nil {
 		return nil, err
 	}
-	if len(o.Subscriptions) == 0 {
-		if err = BuildProfile(ctx); err != nil {
+	// Emptiness is judged after filtering: a profile full of another identity's
+	// subscriptions is empty as far as this identity is concerned, and the
+	// caller deserves a real enumeration rather than an empty list.
+	if len(FilterSubscriptionsByUser(o.Subscriptions, hint)) == 0 {
+		if err = BuildProfile(ctx, hint); err != nil {
 			return nil, err
 		}
 		if o, err = cli.LoadProfile(p); err != nil {
 			return nil, err
 		}
 	}
-	return o.Subscriptions, nil
+	return FilterSubscriptionsByUser(o.Subscriptions, hint), nil
 }
 
 // ListSubscriptions enumerates every subscription reachable from the Selected
 // Account. It returns the list rather than writing the profile so the caller can
 // merge it with what other identities previously contributed.
-func ListSubscriptions(ctx context.Context) ([]cli.Subscription, error) {
-	return NewEnumerator().ListSubscriptions(ctx)
+func ListSubscriptions(ctx context.Context, hint string) ([]cli.Subscription, error) {
+	return NewEnumeratorForAccount(hint).ListSubscriptions(ctx)
 }
 
 // ListSubscriptions enumerates through the Enumerator so the tenant listing and
@@ -73,7 +88,10 @@ func (e *Enumerator) ListSubscriptions(ctx context.Context) (subscriptions []cli
 	if err != nil {
 		return nil, err
 	}
-	user := SubscriptionUser(ctx, accounts, "")
+	// Attribution must name the identity that acquired the tokens, so it reads
+	// the same hint the credentials were built from rather than repeating an
+	// independent Active Account lookup.
+	user := SubscriptionUser(ctx, accounts, e.hint)
 
 	tenants, err := e.Tenants(ctx)
 	if err != nil {
@@ -129,8 +147,8 @@ func (e *Enumerator) ListSubscriptions(ctx context.Context) (subscriptions []cli
 	return
 }
 
-func ListSubscriptionsForTenant(ctx context.Context, tenant string) (subscriptions []*armsubscriptions.Subscription, err error) {
-	client, err := armsubscriptions.NewClient(TokenCredential{TenantID: tenant}, nil)
+func ListSubscriptionsForTenant(ctx context.Context, tenant, hint string) (subscriptions []*armsubscriptions.Subscription, err error) {
+	client, err := newSubscriptionsClient(TokenCredential{TenantID: tenant, PreferredUsername: hint}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -157,8 +175,8 @@ func ListSubscriptionsForTenant(ctx context.Context, tenant string) (subscriptio
 	return
 }
 
-func ListTenants(ctx context.Context) (tenants []*armsubscriptions.TenantIDDescription, err error) {
-	client, err := armsubscriptions.NewTenantsClient(TokenCredential{}, nil)
+func ListTenants(ctx context.Context, hint string) (tenants []*armsubscriptions.TenantIDDescription, err error) {
+	client, err := newTenantsClient(TokenCredential{PreferredUsername: hint}, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -176,8 +194,8 @@ func ListTenants(ctx context.Context) (tenants []*armsubscriptions.TenantIDDescr
 
 // ListOrganizations gets detailed information about all organizations (tenants)
 // the user has access to, similar to what you see in "Switch Organizations"
-func ListOrganizations(ctx context.Context) ([]Organization, error) {
-	return NewEnumerator().ListOrganizations(ctx)
+func ListOrganizations(ctx context.Context, hint string) ([]Organization, error) {
+	return NewEnumeratorForAccount(hint).ListOrganizations(ctx)
 }
 
 // ListOrganizations shares the Enumerator's tenant and subscription listings, so
@@ -216,11 +234,11 @@ func (e *Enumerator) ListOrganizations(ctx context.Context) ([]Organization, err
 
 // organizationDetails calls Microsoft Graph API to get detailed organization information
 func (e *Enumerator) organizationDetails(ctx context.Context, tenantID string) (Organization, error) {
-	// Create a tenant-specific credential
-	cred := TokenCredential{TenantID: tenantID}
+	// Create a tenant-specific credential, scoped to this Enumerator's identity.
+	cred := TokenCredential{TenantID: tenantID, PreferredUsername: e.hint}
 
 	// Create Microsoft Graph client
-	client, err := msgraphsdk.NewGraphServiceClientWithCredentials(cred, []string{"https://graph.microsoft.com/.default"})
+	client, err := newGraphClient(cred, []string{"https://graph.microsoft.com/.default"})
 	if err != nil {
 		return Organization{}, fmt.Errorf("failed to create Graph client for tenant %s: %w", tenantID, err)
 	}
@@ -303,8 +321,8 @@ func (e *Enumerator) hasSubscriptions(ctx context.Context, tenantID string) bool
 
 // ListTenantDetails returns basic tenant information with subscription counts
 // This is a simpler alternative that doesn't require Microsoft Graph API permissions
-func ListTenantDetails(ctx context.Context) ([]TenantDetail, error) {
-	return NewEnumerator().ListTenantDetails(ctx)
+func ListTenantDetails(ctx context.Context, hint string) ([]TenantDetail, error) {
+	return NewEnumeratorForAccount(hint).ListTenantDetails(ctx)
 }
 
 // ListTenantDetails counts each tenant's subscriptions using the memoised

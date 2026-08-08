@@ -22,6 +22,12 @@ var _ = Describe("Command error handling", func() {
 			if len(c.Commands()) > 0 {
 				return
 			}
+			// Cobra generates its own help command the first time the tree is
+			// executed. It is framework-owned and cannot fail, so it is not
+			// ours to audit.
+			if c.Name() == "help" && c.Parent() == c.Root() {
+				return
+			}
 			if c.Run != nil || c.RunE == nil {
 				offenders = append(offenders, c.CommandPath())
 			}

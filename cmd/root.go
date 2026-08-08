@@ -58,6 +58,10 @@ func Execute() {
 var rootCmd = &cobra.Command{
 	Use:    "az",
 	Hidden: true,
+	// A command that fails at runtime has already parsed its arguments
+	// correctly, so dumping the usage text only buries the actual error and
+	// pollutes the output a caller may be parsing.
+	SilenceUsage: true,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		_ = viper.BindPFlags(cmd.Flags())
 	},

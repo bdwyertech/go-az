@@ -3,6 +3,7 @@ package az
 import (
 	"os"
 
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -29,4 +30,14 @@ func useTempCredDir() string {
 	})
 
 	return dir
+}
+
+// twoIdentityAccounts is a hermetic, two-identity token cache fixture: a
+// regular user recorded as the Active Account, and an admin account that is
+// not. Callers combine this with useTempCredDir and a fake Enumerator so a
+// spec never depends on a real cached login.
+func twoIdentityAccounts() (user, admin public.Account) {
+	user = acct("Brian.Dwyer@broadridge.com", "oid-user", "tenant-a")
+	admin = acct("DwyerAdminCld@Broadridge.onmicrosoft.com", "oid-admin", "tenant-b")
+	return
 }
