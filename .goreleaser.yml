@@ -55,6 +55,23 @@ changelog:
 
 release:
   # disable: true
+  footer: |
+    ## Verification
+
+    ### Build Provenance
+    This release includes build provenance attestations. Verify with:
+    ```bash
+    gh attestation verify az --owner bdwyertech
+    ```
+
+    ### Cosign Signature
+    Checksums are signed with Cosign. Verify with:
+    ```bash
+    cosign verify-blob checksums.txt --bundle checksums.txt.sigstore.json --certificate-identity-regexp=https://github.com/bdwyertech --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+    ```
+
+    ### SBOM
+    Software Bill of Materials (SBOM) files are included for supply chain transparency.
 
 # creates SBOMs of all archives and the source tarball using syft
 # https://goreleaser.com/customization/sbom
