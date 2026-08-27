@@ -9,6 +9,7 @@ on:
         default: ''
   push:
     branches: ['main']
+    tags: ['v*']
 
 concurrency:
   group: ${{ github.workflow }}
