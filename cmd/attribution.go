@@ -19,5 +19,5 @@ func emitAttribution(cmd *cobra.Command, username string) {
 	if username == "" {
 		return
 	}
-	fmt.Fprintf(cmd.ErrOrStderr(), "Enumerating as %s\n", username)
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Enumerating as %s\n", username)
 }
