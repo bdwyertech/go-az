@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// Property 8: Profile reads are scoped to the resolved identity.
+// Profile reads are scoped to the resolved identity.
 //
 // azureProfile.json is a union of every identity that has ever enumerated, so an
 // unfiltered read shows one identity another identity's subscriptions. Worse,

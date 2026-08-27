@@ -31,8 +31,8 @@ func idSet(subs []cli.Subscription) map[string]bool {
 	return m
 }
 
-// Property 7: merging preserves every subscription. No ID present in either
-// input may be dropped, and no ID may be invented.
+// Merging preserves every subscription. No ID present in either input may be
+// dropped, and no ID may be invented.
 func TestMergePreservesEverySubscription(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		existing := subGen(t, "existing")
@@ -60,8 +60,8 @@ func TestMergePreservesEverySubscription(t *testing.T) {
 	})
 }
 
-// Property 8: merging is idempotent. Re-merging the result with the same
-// discovered set must not shuffle or change anything.
+// Merging is idempotent. Re-merging the result with the same discovered set
+// must not shuffle or change anything.
 func TestMergeIsIdempotent(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		existing := subGen(t, "existing")
@@ -79,8 +79,8 @@ func TestMergeIsIdempotent(t *testing.T) {
 	})
 }
 
-// Property 9: merged order is deterministic. Shuffling either input cannot
-// change the result, so the profile on disk stays byte-stable.
+// Merged order is deterministic. Shuffling either input cannot change the
+// result, so the profile on disk stays byte-stable.
 func TestMergeOrderIsDeterministic(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		existing := subGen(t, "existing")
@@ -95,8 +95,8 @@ func TestMergeOrderIsDeterministic(t *testing.T) {
 	})
 }
 
-// Property 10: exactly one default survives, and never zero, so the Azure CLI
-// always has a subscription to fall back on.
+// Exactly one default survives, and never zero, so the Azure CLI always has a
+// subscription to fall back on.
 func TestMergeKeepsExactlyOneDefault(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		existing := subGen(t, "existing")

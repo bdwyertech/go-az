@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Hint propagation (Property 1)", func() {
+var _ = Describe("Hint propagation", func() {
 	It("carries the hint to the tenants, subscriptions, and Graph credentials", func() {
 		useTempCredDir()
 		user, admin := twoIdentityAccounts()

@@ -9,11 +9,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// Property 7: Profile user attribution is consistent. Every subscription an
-// enumeration writes must be credited to the identity that actually acquired
-// the tokens. A profile that attributes a subscription to the wrong identity is
-// worse than one that leaves the field blank, because the user has no way to
-// tell it is wrong.
+// Profile user attribution is consistent. Every subscription an enumeration
+// writes must be credited to the identity that actually acquired the tokens. A
+// profile that attributes a subscription to the wrong identity is worse than one
+// that leaves the field blank, because the user has no way to tell it is wrong.
 var _ = Describe("Profile user attribution", func() {
 	var ctx context.Context
 	var user, admin public.Account

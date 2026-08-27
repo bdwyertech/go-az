@@ -44,7 +44,7 @@ func contains(accounts []public.Account, a public.Account) bool {
 	return false
 }
 
-// TestSelectionIsTotalAndClosed validates design Property 1.
+// TestSelectionIsTotalAndClosed validates that selection is total and closed.
 func TestSelectionIsTotalAndClosed(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -65,7 +65,7 @@ func TestSelectionIsTotalAndClosed(t *testing.T) {
 	})
 }
 
-// TestMatchingHintAlwaysWins validates design Property 2.
+// TestMatchingHintAlwaysWins validates that a matching hint always wins.
 func TestMatchingHintAlwaysWins(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -99,7 +99,7 @@ func TestMatchingHintAlwaysWins(t *testing.T) {
 	})
 }
 
-// TestNonMatchingHintNeverSubstitutes validates design Property 3.
+// TestNonMatchingHintNeverSubstitutes validates that a non-matching hint never substitutes.
 func TestNonMatchingHintNeverSubstitutes(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -115,7 +115,7 @@ func TestNonMatchingHintNeverSubstitutes(t *testing.T) {
 	})
 }
 
-// TestSelectionIgnoresSnapshotOrder validates design Property 4.
+// TestSelectionIgnoresSnapshotOrder validates that selection ignores snapshot order.
 func TestSelectionIgnoresSnapshotOrder(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -139,7 +139,7 @@ func TestSelectionIgnoresSnapshotOrder(t *testing.T) {
 	})
 }
 
-// TestRealmNeverDecidesSelection validates design Property 5.
+// TestRealmNeverDecidesSelection validates that realm never decides selection.
 func TestRealmNeverDecidesSelection(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -166,7 +166,7 @@ func TestRealmNeverDecidesSelection(t *testing.T) {
 	})
 }
 
-// TestActiveAccountIsHonouredWhenUnhinted validates design Property 6.
+// TestActiveAccountIsHonouredWhenUnhinted validates that the active account is honoured when unhinted.
 func TestActiveAccountIsHonouredWhenUnhinted(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {

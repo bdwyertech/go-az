@@ -14,7 +14,7 @@ func scopeGen(t *rapid.T, label string) []string {
 	).Draw(t, label)
 }
 
-// TestScopesAreNeverMutated is Property 11: token options are never mutated.
+// TestScopesAreNeverMutated verifies that token options are never mutated.
 //
 // The interesting case is a caller slice with spare capacity, because that is
 // when append reuses the caller's array. Rapid explores lengths, capacities and

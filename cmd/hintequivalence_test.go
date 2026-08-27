@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Environment fallback is equivalent to the flag (Property 2)", func() {
+var _ = Describe("Environment fallback is equivalent to the flag", func() {
 	BeforeEach(func() {
 		for _, k := range []string{"GO_AZ_USERNAME", "AZURE_USERNAME"} {
 			prev, had := os.LookupEnv(k)

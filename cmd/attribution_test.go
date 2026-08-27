@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Attribution matches the acquiring identity (Property 6)", func() {
+var _ = Describe("Attribution matches the acquiring identity", func() {
 	It("writes the resolved username to the error stream, not the output stream", func() {
 		var out, errOut bytes.Buffer
 

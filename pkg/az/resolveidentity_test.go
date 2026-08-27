@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Unmatched and ambiguous hints abort before output (Property 5)", func() {
+var _ = Describe("Unmatched and ambiguous hints abort before output", func() {
 	// staticEnumerator returns a fake whose tenant and subscription listings
 	// record whether they were reached, so a spec can prove resolution happens
 	// strictly before any enumeration call.
@@ -54,7 +54,7 @@ var _ = Describe("Unmatched and ambiguous hints abort before output (Property 5)
 	})
 })
 
-var _ = Describe("Active Account is still the default (Property 4)", func() {
+var _ = Describe("Active Account is still the default", func() {
 	It("resolves an empty hint to the recorded Active Account", func() {
 		useTempCredDir()
 		user, admin := twoIdentityAccounts()

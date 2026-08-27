@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Active Account independence (Property 3)", func() {
+var _ = Describe("Active Account independence", func() {
 	It("enumerates as the hinted user regardless of the recorded Active Account", func() {
 		useTempCredDir()
 		user, admin := twoIdentityAccounts()
