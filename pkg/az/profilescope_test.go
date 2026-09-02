@@ -17,8 +17,8 @@ import (
 // on User.Name is what makes the profile answer "what can *this* identity see".
 var _ = Describe("Profile reads scoped to an identity", func() {
 	const (
-		user  = "Brian.Dwyer@broadridge.com"
-		admin = "DwyerAdminCld@Broadridge.onmicrosoft.com"
+		user  = "user@contoso.com"
+		admin = "adminuser@Contoso.onmicrosoft.com"
 	)
 
 	var ctx context.Context

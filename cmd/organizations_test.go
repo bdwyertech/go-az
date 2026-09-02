@@ -22,7 +22,7 @@ func fakeDiscovery(byUser map[string][]az.Organization) {
 		if hint == "" {
 			// No hint means the Active Account, which this fixture records as
 			// the admin identity.
-			return "DwyerAdminCld@Broadridge.onmicrosoft.com", nil
+			return "adminuser@Contoso.onmicrosoft.com", nil
 		}
 		if _, ok := byUser[hint]; !ok {
 			return "", az.ErrNoMatchingAccount
@@ -40,8 +40,8 @@ func fakeDiscovery(byUser map[string][]az.Organization) {
 
 var _ = Describe("organizations end to end", func() {
 	const (
-		user  = "Brian.Dwyer@broadridge.com"
-		admin = "DwyerAdminCld@Broadridge.onmicrosoft.com"
+		user  = "user@contoso.com"
+		admin = "adminuser@Contoso.onmicrosoft.com"
 	)
 
 	var out, errOut bytes.Buffer
@@ -64,8 +64,8 @@ var _ = Describe("organizations end to end", func() {
 
 	BeforeEach(func() {
 		fakeDiscovery(map[string][]az.Organization{
-			user:  {{ID: "tenant-a", DisplayName: "Broadridge"}},
-			admin: {{ID: "tenant-b", DisplayName: "Broadridge Admin"}},
+			user:  {{ID: "tenant-a", DisplayName: "Contoso"}},
+			admin: {{ID: "tenant-b", DisplayName: "Contoso Admin"}},
 		})
 		DeferCleanup(func() { rootCmd.SetArgs(nil) })
 	})

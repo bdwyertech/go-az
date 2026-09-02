@@ -47,7 +47,7 @@ var _ = Describe("Unmatched and ambiguous hints abort before output", func() {
 
 		// A case-insensitive hint must still resolve to the cached spelling, so
 		// downstream credentials and the attribution line agree.
-		got, err := ResolveEnumerationIdentity(context.Background(), e, "brian.dwyer@BROADRIDGE.com")
+		got, err := ResolveEnumerationIdentity(context.Background(), e, "user@CONTOSO.com")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(got).To(Equal(user.PreferredUsername))
 		Expect(reached).To(BeFalse())

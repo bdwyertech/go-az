@@ -20,8 +20,8 @@ func acct(username, oid, tenant string) public.Account {
 }
 
 var _ = Describe("ResolveAccount", func() {
-	a := acct("Brian.Dwyer@broadridge.com", "oid-1", "tenant-a")
-	b := acct("DwyerAdminCld@Broadridge.onmicrosoft.com", "oid-2", "tenant-b")
+	a := acct("user@contoso.com", "oid-1", "tenant-a")
+	b := acct("adminuser@Contoso.onmicrosoft.com", "oid-2", "tenant-b")
 	pair := []public.Account{a, b}
 
 	It("returns ErrNoMatchingAccount for an empty snapshot", func() {
@@ -30,7 +30,7 @@ var _ = Describe("ResolveAccount", func() {
 	})
 
 	It("matches a username hint without regard to case", func() {
-		got, err := ResolveAccount(pair, "BRIAN.DWYER@BROADRIDGE.COM", "", "")
+		got, err := ResolveAccount(pair, "USER@CONTOSO.COM", "", "")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(got.HomeAccountID).To(Equal(a.HomeAccountID))
 	})
@@ -84,29 +84,29 @@ var _ = Describe("ResolveAccount", func() {
 			LocalAccountID:    "oid-1",
 			Environment:       "login.microsoftonline.com",
 			Realm:             "tenant-a",
-			PreferredUsername: "Daniel.Ristic@broadridge.com",
+			PreferredUsername: "user@contoso.com",
 		}
 		orgRealm := public.Account{
 			HomeAccountID:     "oid-1.tenant-a",
 			LocalAccountID:    "oid-1",
 			Environment:       "login.microsoftonline.com",
 			Realm:             "organizations",
-			PreferredUsername: "Daniel.Ristic@broadridge.com",
+			PreferredUsername: "user@contoso.com",
 		}
 
 		It("collapses two entries with the same home_account_id into one", func() {
 			dupes := []public.Account{tenantSpecific, orgRealm}
 			got, err := ResolveAccount(dupes, "", "", "")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(got.PreferredUsername).To(Equal("Daniel.Ristic@broadridge.com"))
+			Expect(got.PreferredUsername).To(Equal("user@contoso.com"))
 		})
 
-		It("prefers the tenant-specific realm over organizations", func() {
+		It("collapses regardless of the order the realms appear in", func() {
 			// organizations first, tenant-specific second
 			dupes := []public.Account{orgRealm, tenantSpecific}
 			got, err := ResolveAccount(dupes, "", "", "")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(got.Realm).To(Equal("tenant-a"))
+			Expect(got.HomeAccountID).To(Equal("oid-1.tenant-a"))
 		})
 
 		It("does not collapse entries with different home_account_ids", func() {

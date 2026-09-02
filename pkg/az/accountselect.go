@@ -33,22 +33,18 @@ func homeTenant(a public.Account) string {
 // that differ only in Realm. Keeping them both causes ResolveAccount to see
 // two equally-good candidates and reject the request as ambiguous.
 //
-// When duplicates exist the entry whose realm is a concrete tenant GUID is
-// preferred over the generic "organizations" value, because the tenant-scoped
-// entry carries more information for downstream matching.
+// One entry per home account id is enough: every field selection reads
+// (username, object id, home account id, home tenant) is identical across the
+// duplicates, so the surviving entry is interchangeable with the ones dropped.
 func deduplicateAccounts(accounts []public.Account) []public.Account {
-	seen := make(map[string]int, len(accounts)) // home_account_id → index in out
+	seen := make(map[string]bool, len(accounts))
 	out := make([]public.Account, 0, len(accounts))
 	for _, a := range accounts {
 		key := strings.ToLower(a.HomeAccountID)
-		if idx, exists := seen[key]; exists {
-			// Prefer the tenant-specific realm over "organizations".
-			if strings.EqualFold(out[idx].Realm, "organizations") && !strings.EqualFold(a.Realm, "organizations") {
-				out[idx] = a
-			}
+		if seen[key] {
 			continue
 		}
-		seen[key] = len(out)
+		seen[key] = true
 		out = append(out, a)
 	}
 	return out

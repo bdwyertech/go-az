@@ -16,9 +16,9 @@ var _ = Describe("Attribution matches the acquiring identity", func() {
 		c.SetOut(&out)
 		c.SetErr(&errOut)
 
-		emitAttribution(c, "Brian.Dwyer@broadridge.com")
+		emitAttribution(c, "user@contoso.com")
 
-		Expect(errOut.String()).To(ContainSubstring("Brian.Dwyer@broadridge.com"))
+		Expect(errOut.String()).To(ContainSubstring("user@contoso.com"))
 		Expect(out.String()).To(BeEmpty())
 	})
 
@@ -29,7 +29,7 @@ var _ = Describe("Attribution matches the acquiring identity", func() {
 		c.SetOut(&out)
 		c.SetErr(&errOut)
 
-		emitAttribution(c, "Brian.Dwyer@broadridge.com")
+		emitAttribution(c, "user@contoso.com")
 
 		// Attribution must never leak into the machine-readable stream, so the
 		// same buffer that carries the payload still decodes as a bare array.

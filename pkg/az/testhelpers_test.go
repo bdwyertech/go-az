@@ -37,7 +37,7 @@ func useTempCredDir() string {
 // not. Callers combine this with useTempCredDir and a fake Enumerator so a
 // spec never depends on a real cached login.
 func twoIdentityAccounts() (user, admin public.Account) {
-	user = acct("Brian.Dwyer@broadridge.com", "oid-user", "tenant-a")
-	admin = acct("DwyerAdminCld@Broadridge.onmicrosoft.com", "oid-admin", "tenant-b")
+	user = acct("user@contoso.com", "oid-user", "tenant-a")
+	admin = acct("adminuser@Contoso.onmicrosoft.com", "oid-admin", "tenant-b")
 	return
 }

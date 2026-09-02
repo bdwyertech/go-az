@@ -26,7 +26,7 @@ var _ = Describe("Environment fallback is equivalent to the flag", func() {
 	// The hint is the only input the enumeration path takes, so proving the two
 	// spellings produce the same hint proves they produce the same credentials.
 	It("yields the same hint from GO_AZ_USERNAME as from the flag", func() {
-		const want = "Brian.Dwyer@broadridge.com"
+		const want = "user@contoso.com"
 
 		viaFlag := newHintCommand()
 		Expect(viaFlag.Flags().Set("preferred-username", want)).To(Succeed())
@@ -39,7 +39,7 @@ var _ = Describe("Environment fallback is equivalent to the flag", func() {
 	})
 
 	It("yields the same hint from AZURE_USERNAME as from the flag", func() {
-		const want = "DwyerAdminCld@Broadridge.onmicrosoft.com"
+		const want = "adminuser@Contoso.onmicrosoft.com"
 
 		viaFlag := newHintCommand()
 		Expect(viaFlag.Flags().Set("preferred-username", want)).To(Succeed())
