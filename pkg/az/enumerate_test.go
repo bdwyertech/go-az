@@ -25,7 +25,7 @@ func armSub(id, name string) *armsubscriptions.Subscription {
 	}
 }
 
-// fakeEnumerator wires an Enumerator to canned data so a spec can assert how
+// fakeEnumerator wires an Enumerator to canned data so a test can assert how
 // many times each listing was reached rather than guessing from timings.
 func fakeEnumerator(tenants []string, subs map[string][]*armsubscriptions.Subscription, accounts []public.Account) *Enumerator {
 	e := NewEnumerator()

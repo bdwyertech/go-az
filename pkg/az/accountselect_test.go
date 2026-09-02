@@ -24,9 +24,32 @@ var _ = Describe("ResolveAccount", func() {
 	b := acct("adminuser@Contoso.onmicrosoft.com", "oid-2", "tenant-b")
 	pair := []public.Account{a, b}
 
-	It("returns ErrNoMatchingAccount for an empty snapshot", func() {
+	It("returns ErrNoCachedAccounts for an empty snapshot", func() {
 		_, err := ResolveAccount(nil, "", "", "")
-		Expect(errors.Is(err, ErrNoMatchingAccount)).To(BeTrue())
+		Expect(errors.Is(err, ErrNoCachedAccounts)).To(BeTrue())
+	})
+
+	// --- Bug-condition exploration tests (Conditions 1.1, 1.2) ---
+	// These assert the DESIRED behavior: an empty cache is a distinct
+	// situation from "hint matched nothing". They are expected to FAIL
+	// against the unfixed code, confirming the bug exists.
+
+	It("[exploration] empty snapshot without hint is not ErrNoMatchingAccount", func() {
+		_, err := ResolveAccount(nil, "", "", "")
+		Expect(err).To(HaveOccurred(), "empty snapshot should still be an error")
+		Expect(errors.Is(err, ErrNoMatchingAccount)).To(BeFalse(),
+			"empty cache should be a distinct signal, not an unmatched-hint error")
+		Expect(errors.Is(err, ErrAmbiguousAccount)).To(BeFalse(),
+			"empty cache should never look ambiguous")
+	})
+
+	It("[exploration] empty snapshot with hint is not ErrNoMatchingAccount", func() {
+		_, err := ResolveAccount(nil, "user@example.com", "", "")
+		Expect(err).To(HaveOccurred(), "empty snapshot should still be an error")
+		Expect(errors.Is(err, ErrNoMatchingAccount)).To(BeFalse(),
+			"an empty cache with a hint should not be treated as unmatched")
+		Expect(errors.Is(err, ErrAmbiguousAccount)).To(BeFalse(),
+			"an empty cache with a hint should never look ambiguous")
 	})
 
 	It("matches a username hint without regard to case", func() {

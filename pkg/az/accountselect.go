@@ -17,6 +17,11 @@ var ErrNoMatchingAccount = errors.New("no cached account matches the requested u
 // candidates and the caller must say which one to use.
 var ErrAmbiguousAccount = errors.New("several cached accounts match; specify one")
 
+// ErrNoCachedAccounts reports that the local token cache holds zero accounts.
+// It is disjoint from ErrNoMatchingAccount (which presumes a non-empty cache)
+// and ErrAmbiguousAccount.
+var ErrNoCachedAccounts = errors.New("no accounts are cached; sign in first")
+
 // homeTenant returns the tenant GUID encoded in the suffix of a home account id.
 // MSAL writes home_account_id as "{object-id}.{tenant-id}". The realm field is
 // unrelated: it is frequently the literal "organizations" and carries no tenant.
@@ -57,6 +62,13 @@ func deduplicateAccounts(accounts []public.Account) []public.Account {
 func ResolveAccount(accounts []public.Account, hint, active, tenant string) (public.Account, error) {
 	accounts = deduplicateAccounts(accounts)
 
+	// An empty cache is a distinct signal: there is nothing to select from, so
+	// the caller should fall through to login rather than treating it as a
+	// selection failure.
+	if len(accounts) == 0 {
+		return public.Account{}, ErrNoCachedAccounts
+	}
+
 	// Step 1: an explicit hint is authoritative. Matching it against a stale or
 	// absent identity is an error rather than a silent fallback, because logging
 	// in as somebody the caller did not ask for is worse than failing.
@@ -94,9 +106,6 @@ func ResolveAccount(accounts []public.Account, hint, active, tenant string) (pub
 		return accounts[0], nil
 	}
 
-	if len(accounts) == 0 {
-		return public.Account{}, ErrNoMatchingAccount
-	}
 	return public.Account{}, fmt.Errorf("%w: %s", ErrAmbiguousAccount, strings.Join(usernames(accounts), ", "))
 }
 

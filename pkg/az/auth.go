@@ -128,6 +128,8 @@ func acquireInteractive(ctx context.Context, options TokenOptions) (token public
 	}
 
 	if os.Getenv("GO_AZ_DEVICECODE") != "" {
+		// WithLoginHint satisfies AcquireInteractiveOption, not AcquireByDeviceCodeOption,
+		// so a login hint cannot be passed to the device-code flow.
 		var code public.DeviceCode
 		code, err = pubClient.AcquireTokenByDeviceCode(ctx, options.Scopes, public.WithTenantID(options.TenantID))
 		if err != nil {
@@ -141,10 +143,15 @@ func acquireInteractive(ctx context.Context, options TokenOptions) (token public
 	// and handed over; a lost race is retried on a fresh port rather than failing
 	// the whole login.
 	err = withRedirectPort(ctx, func(port int) error {
-		var berr error
-		token, berr = pubClient.AcquireTokenInteractive(ctx, options.Scopes,
+		opts := []public.AcquireInteractiveOption{
 			public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)),
-			public.WithTenantID(options.TenantID))
+			public.WithTenantID(options.TenantID),
+		}
+		if options.PreferredUsername != "" {
+			opts = append(opts, public.WithLoginHint(options.PreferredUsername))
+		}
+		var berr error
+		token, berr = pubClient.AcquireTokenInteractive(ctx, options.Scopes, opts...)
 		return berr
 	})
 	return

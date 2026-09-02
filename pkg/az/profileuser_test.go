@@ -18,7 +18,7 @@ var _ = Describe("Profile user attribution", func() {
 	var user, admin public.Account
 
 	// Two tenants with a subscription each, plus a tenant with none, so the
-	// spec covers both the normal and the tenant-level-account branch.
+	// test covers both the normal and the tenant-level-account branch.
 	subs := map[string][]*armsubscriptions.Subscription{
 		"tenant-a": {armSub("sub-a", "Sub A")},
 		"tenant-b": {armSub("sub-b", "Sub B")},

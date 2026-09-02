@@ -9,7 +9,7 @@ import (
 )
 
 // credRecorder captures every TokenCredential handed to the ARM tenants
-// client, the ARM subscriptions client, and the Graph client, so a spec can
+// client, the ARM subscriptions client, and the Graph client, so a test can
 // assert on PreferredUsername without a live network call.
 type credRecorder struct {
 	tenants       []TokenCredential
@@ -18,7 +18,7 @@ type credRecorder struct {
 }
 
 // install swaps the package-level client constructors for recording doubles
-// and restores the originals during spec cleanup.
+// and restores the originals during test cleanup.
 func (r *credRecorder) install() {
 	prevTenants, prevSubs, prevGraph := newTenantsClient, newSubscriptionsClient, newGraphClient
 

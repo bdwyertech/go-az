@@ -54,7 +54,7 @@ var _ = Describe("Context propagation", func() {
 			cancel()
 
 			// Before this change these paths called log.Fatal, which no caller
-			// and no spec could recover from.
+			// and no test could recover from.
 			_, err := ListTenants(ctx, "")
 			Expect(err).To(HaveOccurred())
 

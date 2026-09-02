@@ -44,7 +44,7 @@ func contains(accounts []public.Account, a public.Account) bool {
 	return false
 }
 
-// TestSelectionIsTotalAndClosed validates that selection is total and closed.
+// TestSelectionIsTotalAndClosed checks that selection is total and closed.
 func TestSelectionIsTotalAndClosed(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -65,7 +65,7 @@ func TestSelectionIsTotalAndClosed(t *testing.T) {
 	})
 }
 
-// TestMatchingHintAlwaysWins validates that a matching hint always wins.
+// TestMatchingHintAlwaysWins checks that a matching hint always wins.
 func TestMatchingHintAlwaysWins(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -99,7 +99,7 @@ func TestMatchingHintAlwaysWins(t *testing.T) {
 	})
 }
 
-// TestNonMatchingHintNeverSubstitutes validates that a non-matching hint never substitutes.
+// TestNonMatchingHintNeverSubstitutes checks that a non-matching hint never substitutes.
 func TestNonMatchingHintNeverSubstitutes(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -115,7 +115,7 @@ func TestNonMatchingHintNeverSubstitutes(t *testing.T) {
 	})
 }
 
-// TestSelectionIgnoresSnapshotOrder validates that selection ignores snapshot order.
+// TestSelectionIgnoresSnapshotOrder checks that selection ignores snapshot order.
 func TestSelectionIgnoresSnapshotOrder(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -139,7 +139,7 @@ func TestSelectionIgnoresSnapshotOrder(t *testing.T) {
 	})
 }
 
-// TestRealmNeverDecidesSelection validates that realm never decides selection.
+// TestRealmNeverDecidesSelection checks that realm never decides selection.
 func TestRealmNeverDecidesSelection(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {
@@ -166,7 +166,28 @@ func TestRealmNeverDecidesSelection(t *testing.T) {
 	})
 }
 
-// TestActiveAccountIsHonouredWhenUnhinted validates that the active account is honoured when unhinted.
+// TestEmptySnapshotNeverYieldsSelectionError checks that an empty cache
+// never produces ErrNoMatchingAccount or ErrAmbiguousAccount.
+func TestEmptySnapshotNeverYieldsSelectionError(t *testing.T) {
+	t.Parallel()
+	rapid.Check(t, func(t *rapid.T) {
+		hint := rapid.SampledFrom([]string{"", "a@x.com", "oid-0", "nobody"}).Draw(t, "hint")
+		active := rapid.SampledFrom([]string{"", "oid-0.tenant-a", "oid-99.tenant-z"}).Draw(t, "active")
+		tenant := rapid.SampledFrom([]string{"", "tenant-a", "tenant-z"}).Draw(t, "tenant")
+
+		_, err := ResolveAccount(nil, hint, active, tenant)
+		if errors.Is(err, ErrNoMatchingAccount) {
+			t.Fatalf("empty snapshot yielded ErrNoMatchingAccount (hint=%q, active=%q, tenant=%q)",
+				hint, active, tenant)
+		}
+		if errors.Is(err, ErrAmbiguousAccount) {
+			t.Fatalf("empty snapshot yielded ErrAmbiguousAccount (hint=%q, active=%q, tenant=%q)",
+				hint, active, tenant)
+		}
+	})
+}
+
+// TestActiveAccountIsHonouredWhenUnhinted checks that the active account is honoured when unhinted.
 func TestActiveAccountIsHonouredWhenUnhinted(t *testing.T) {
 	t.Parallel()
 	rapid.Check(t, func(t *rapid.T) {

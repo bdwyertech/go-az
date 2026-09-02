@@ -46,7 +46,7 @@ var _ = Describe("organizations end to end", func() {
 
 	var out, errOut bytes.Buffer
 
-	// runOrganizations drives the real command tree from the root, so the spec
+	// runOrganizations drives the real command tree from the root, so the test
 	// exercises the same dispatch, flag parsing, and output path a user gets.
 	// Executing the leaf directly would walk up to the root anyway and print
 	// help instead of running RunE.
@@ -54,7 +54,7 @@ var _ = Describe("organizations end to end", func() {
 		out.Reset()
 		errOut.Reset()
 		// Cobra flag values persist on the shared command object, so a run
-		// without a hint would otherwise inherit the previous spec's.
+		// without a hint would otherwise inherit the previous test's.
 		_ = rootCmd.PersistentFlags().Set("preferred-username", "")
 		rootCmd.SetOut(&out)
 		rootCmd.SetErr(&errOut)

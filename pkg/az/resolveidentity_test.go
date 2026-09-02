@@ -11,7 +11,7 @@ import (
 
 var _ = Describe("Unmatched and ambiguous hints abort before output", func() {
 	// staticEnumerator returns a fake whose tenant and subscription listings
-	// record whether they were reached, so a spec can prove resolution happens
+	// record whether they were reached, so a test can prove resolution happens
 	// strictly before any enumeration call.
 	newProbe := func(accounts []public.Account, reached *bool) *Enumerator {
 		e := NewEnumerator()

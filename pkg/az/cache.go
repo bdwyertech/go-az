@@ -23,7 +23,7 @@ func init() {
 }
 
 // credDirOverride, when non-empty, replaces the default ~/.azure credential
-// directory. Tests point this at a per-spec temporary directory so no spec
+// directory. Tests point this at a temporary directory so no test
 // ever touches the real user credential store.
 var credDirOverride string
 

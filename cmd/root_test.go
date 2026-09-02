@@ -8,10 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newHintCommand mirrors the root command's flag registration so a spec can
+// newHintCommand mirrors the root command's flag registration so a test can
 // exercise accountHint without mutating the package level rootCmd.
 func newHintCommand() *cobra.Command {
-	c := &cobra.Command{Use: "spec"}
+	c := &cobra.Command{Use: "test"}
 	c.Flags().String("preferred-username", "", "")
 	return c
 }

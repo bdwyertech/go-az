@@ -26,7 +26,7 @@ type Enumerator struct {
 	listSubs     func(context.Context, string) ([]*armsubscriptions.Subscription, error)
 	loadAccounts func(context.Context) ([]public.Account, error)
 
-	// Call counters exist so specs can assert the bound rather than infer it.
+	// Call counters exist so tests can assert the bound rather than infer it.
 	tenantCalls  int
 	subCalls     map[string]int
 	accountCalls int

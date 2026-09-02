@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/bdwyertech/go-az/pkg/az"
 
 	"github.com/spf13/cobra"
 )
@@ -19,9 +22,17 @@ import (
 // The returned value is the canonical PreferredUsername from the cache rather
 // than the raw hint, so the credential is built from the same spelling the cache
 // uses.
+//
+// When the cache is completely empty, there is nothing to protect against, so
+// the function returns the raw hint (possibly empty) and lets the token layer
+// proceed to an interactive prompt.
 func resolveHint(cmd *cobra.Command) (string, error) {
-	username, err := resolveIdentity(cmd, accountHint(cmd))
+	hint := accountHint(cmd)
+	username, err := resolveIdentity(cmd, hint)
 	if err != nil {
+		if errors.Is(err, az.ErrNoCachedAccounts) {
+			return hint, nil
+		}
 		return "", fmt.Errorf("selecting an account: %w", err)
 	}
 	return username, nil

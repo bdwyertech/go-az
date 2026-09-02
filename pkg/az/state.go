@@ -22,7 +22,7 @@ type State struct {
 const stateFileName = "go_az_state.json"
 
 // statePath resolves the State File beside the Token Cache, honouring the
-// credential directory override so specs stay hermetic.
+// credential directory override so tests stay hermetic.
 func statePath() (string, error) {
 	d, err := cacheDir()
 	if err != nil {

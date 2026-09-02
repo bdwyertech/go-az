@@ -9,11 +9,11 @@ import (
 )
 
 // useTempCredDir redirects the credential directory to a fresh temporary
-// directory for the duration of the current spec and rebuilds the package
+// directory for the duration of the current test and rebuilds the package
 // level credCache so it points at the temporary location. The previous values
-// are restored during spec cleanup.
+// are restored during test cleanup.
 func useTempCredDir() string {
-	dir, err := os.MkdirTemp("", "go-az-spec-")
+	dir, err := os.MkdirTemp("", "go-az-test-")
 	Expect(err).NotTo(HaveOccurred())
 	Expect(os.Chmod(dir, 0700)).To(Succeed())
 
@@ -35,7 +35,7 @@ func useTempCredDir() string {
 // twoIdentityAccounts is a hermetic, two-identity token cache fixture: a
 // regular user recorded as the Active Account, and an admin account that is
 // not. Callers combine this with useTempCredDir and a fake Enumerator so a
-// spec never depends on a real cached login.
+// test never depends on a real cached login.
 func twoIdentityAccounts() (user, admin public.Account) {
 	user = acct("user@contoso.com", "oid-user", "tenant-a")
 	admin = acct("adminuser@Contoso.onmicrosoft.com", "oid-admin", "tenant-b")

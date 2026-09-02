@@ -83,3 +83,58 @@ var _ = Describe("token commands scoped to an identity", func() {
 		Expect(az.ResolveAccountHint("")).To(BeEmpty())
 	})
 })
+
+// Condition 1.1, 1.3: cold start — an empty cache should not abort kube-cred.
+// The current code collapses "no accounts cached" into the same error path as
+// "hint matched nothing", so kube-cred exits non-zero before the token layer
+// has a chance to prompt for login. This test asserts the desired behavior:
+// kube-cred proceeds past account selection. It will FAIL against the unfixed
+// code, proving the bug exists.
+var _ = Describe("kube-cred cold start (empty cache)", func() {
+	var out, errOut bytes.Buffer
+
+	BeforeEach(func() {
+		out.Reset()
+		errOut.Reset()
+
+		// Simulate what happens with an empty cache: resolveIdentity returns
+		// ErrNoCachedAccounts because ResolveAccount(nil, ...) now returns that
+		// sentinel when the cache snapshot is empty (task 2.2).
+		orig := resolveIdentity
+		resolveIdentity = func(cmd *cobra.Command, hint string) (string, error) {
+			return "", az.ErrNoCachedAccounts
+		}
+		DeferCleanup(func() {
+			resolveIdentity = orig
+			rootCmd.SetArgs(nil)
+			_ = rootCmd.PersistentFlags().Set("preferred-username", "")
+		})
+	})
+
+	run := func(args ...string) error {
+		rootCmd.SetOut(&out)
+		rootCmd.SetErr(&errOut)
+		rootCmd.SetArgs(args)
+		return rootCmd.ExecuteContext(context.Background())
+	}
+
+	It("proceeds past selection when the cache is empty and no hint is given", func() {
+		err := run("kube-cred")
+
+		// Desired: the command does not abort at account selection. It should
+		// reach the token layer, which will prompt for login. If an error
+		// occurs, it must not be a selection error — the empty-cache case
+		// should have been swallowed by resolveHint.
+		if err != nil {
+			Expect(err.Error()).ToNot(ContainSubstring("selecting an account"))
+		}
+	})
+
+	It("keeps stdout empty when the cache is empty", func() {
+		_ = run("kube-cred")
+
+		// Whether the command aborts or proceeds, stdout must remain clean
+		// because kubectl parses it.
+		Expect(out.String()).To(BeEmpty())
+	})
+})
