@@ -2,6 +2,7 @@ package az
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -45,6 +46,46 @@ func newPubClient(options TokenOptions, t *http.Transport) (public.Client, error
 	)
 }
 
+// resolveAccountFromCache picks exactly one cached account from pubClient's
+// cache, applying the same resolution rules everywhere: Account Hint, Active
+// Account, then tenant scoping. Both acquireSilent and cachedLoginHint call
+// this so their selection logic cannot drift.
+func resolveAccountFromCache(ctx context.Context, pubClient public.Client, options TokenOptions) (public.Account, error) {
+	accounts, err := pubClient.Accounts(ctx)
+	if err != nil || len(accounts) == 0 {
+		if err != nil {
+			log.Debugf("unable to read cached accounts: %v", err)
+		}
+		return public.Account{}, ErrNoCachedAccounts
+	}
+
+	var active string
+	if s, serr := LoadState(ctx); serr == nil {
+		active = s.ActiveHomeAccountID
+	} else {
+		log.Debugf("unable to load active account state: %v", serr)
+	}
+
+	return ResolveAccount(accounts, options.PreferredUsername, active, options.TenantID)
+}
+
+// cachedLoginHint derives a login hint from the token cache without any
+// network request. It returns the PreferredUsername of the resolved account,
+// or "" when no usable hint can be derived (empty cache, resolution error,
+// or a blank username), logging the reason at debug level.
+func cachedLoginHint(ctx context.Context, pubClient public.Client, options TokenOptions) string {
+	selected, err := resolveAccountFromCache(ctx, pubClient, options)
+	if err != nil {
+		log.Debugf("no cached login hint: %v", err)
+		return ""
+	}
+	if selected.PreferredUsername == "" {
+		log.Debug("no cached login hint: resolved account has no username")
+		return ""
+	}
+	return selected.PreferredUsername
+}
+
 // acquireSilent attempts a cache-only token acquisition against exactly one
 // cached account, chosen by ResolveAccount from the Account Hint, the Active
 // Account, and the requested tenant.
@@ -58,19 +99,10 @@ func acquireSilent(ctx context.Context, options TokenOptions) (public.AuthResult
 	}
 
 	opts := []public.AcquireSilentOption{}
-	if accounts, aerr := pubClient.Accounts(ctx); aerr == nil && len(accounts) > 0 {
-		var active string
-		if s, serr := LoadState(ctx); serr == nil {
-			active = s.ActiveHomeAccountID
-		} else {
-			log.Debugf("unable to load active account state: %v", serr)
-		}
-
-		selected, rerr := ResolveAccount(accounts, options.PreferredUsername, active, options.TenantID)
-		if rerr != nil {
-			return public.AuthResult{}, rerr
-		}
+	if selected, rerr := resolveAccountFromCache(ctx, pubClient, options); rerr == nil {
 		opts = append(opts, public.WithSilentAccount(selected))
+	} else if !errors.Is(rerr, ErrNoCachedAccounts) {
+		return public.AuthResult{}, rerr
 	}
 	opts = append(opts, public.WithTenantID(options.TenantID))
 

@@ -127,6 +127,18 @@ func acquireInteractive(ctx context.Context, options TokenOptions) (token public
 		return
 	}
 
+	// Derive the login hint: an explicit Account Hint wins; otherwise fall back
+	// to the cached account that silent acquisition would have tried. The hint
+	// is computed before the device-code check so the same pubClient is reused,
+	// but WithLoginHint is only valid for the browser redirect path.
+	hint := options.PreferredUsername
+	if hint == "" {
+		hint = cachedLoginHint(ctx, pubClient, options)
+	}
+	if hint != "" {
+		log.Debugf("login hint: %s", hint)
+	}
+
 	if os.Getenv("GO_AZ_DEVICECODE") != "" {
 		// WithLoginHint satisfies AcquireInteractiveOption, not AcquireByDeviceCodeOption,
 		// so a login hint cannot be passed to the device-code flow.
@@ -147,8 +159,8 @@ func acquireInteractive(ctx context.Context, options TokenOptions) (token public
 			public.WithRedirectURI(fmt.Sprintf("http://localhost:%v", port)),
 			public.WithTenantID(options.TenantID),
 		}
-		if options.PreferredUsername != "" {
-			opts = append(opts, public.WithLoginHint(options.PreferredUsername))
+		if hint != "" {
+			opts = append(opts, public.WithLoginHint(hint))
 		}
 		var berr error
 		token, berr = pubClient.AcquireTokenInteractive(ctx, options.Scopes, opts...)
