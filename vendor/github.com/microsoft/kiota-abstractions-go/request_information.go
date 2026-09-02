@@ -137,8 +137,34 @@ func castItem[T any, R interface{}](collection []T, mutator func(t T) R) []R {
 	return nil
 }
 
+func isNil(val any) bool {
+	if val == nil {
+		return true
+	}
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice:
+		return v.IsNil()
+	default:
+		return false
+	}
+}
+
+// sanitizeMap converts any map[string]V to map[string]any by applying convert
+// to each value. Entries for which convert returns false are omitted, which is
+// used to skip nil/undefined values per RFC 6570 §2.3 "undefined" semantics.
+func sanitizeMap[V any](m map[string]V, convert func(v V) (any, bool)) map[string]any {
+	sanitized := make(map[string]any, len(m))
+	for k, v := range m {
+		if converted, ok := convert(v); ok {
+			sanitized[k] = converted
+		}
+	}
+	return sanitized
+}
+
 func (request *RequestInformation) sanitizeValue(value any) any {
-	if value == nil {
+	if isNil(value) {
 		return nil
 	}
 
@@ -190,6 +216,29 @@ func (request *RequestInformation) sanitizeValue(value any) any {
 	case []s.DateOnly:
 		return castItem(v, func(v s.DateOnly) string {
 			return v.String()
+		})
+	case map[string]*string:
+		// Map-style query parameter (nullable values): drop nil entries per
+		// RFC 6570 §2.3 "undefined" semantics; dereference remaining pointers.
+		return sanitizeMap(v, func(ptr *string) (any, bool) {
+			if ptr == nil {
+				return nil, false
+			}
+			return *ptr, true
+		})
+	case map[string]string:
+		return sanitizeMap(v, func(s string) (any, bool) { return s, true })
+	case map[string]any:
+		// Re-sanitize in case any values still need conversion (e.g. nil entries).
+		return sanitizeMap(v, func(val any) (any, bool) {
+			if isNil(val) {
+				return nil, false
+			}
+			sVal := request.sanitizeValue(val)
+			if isNil(sVal) {
+				return nil, false
+			}
+			return sVal, true
 		})
 	}
 
@@ -561,10 +610,10 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 			fieldName = tagValue
 		}
 		value := request.sanitizeValue(fieldValue.Interface())
-		valueOfValue := reflect.ValueOf(value)
-		if valueOfValue.IsNil() {
+		if isNil(value) {
 			continue
 		}
+		valueOfValue := reflect.ValueOf(value)
 		str, ok := value.(*string)
 		if ok && str != nil {
 			request.QueryParameters[fieldName] = *str
@@ -575,7 +624,10 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		}
 		it, ok := value.(*int32)
 		if ok && it != nil {
+			// rendered into the deprecated QueryParameters map only; QueryParametersAny is
+			// documented to stay empty for it, so don't let it reach normalizeParameters
 			request.QueryParameters[fieldName] = strconv.FormatInt(int64(*it), 10)
+			continue
 		}
 		strArr, ok := value.([]string)
 		if ok && len(strArr) > 0 {
@@ -591,6 +643,9 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 		if arr, ok := value.([]any); ok && len(arr) > 0 {
 			request.QueryParametersAny[fieldName] = arr
 		}
+		if mapAny, ok := value.(map[string]any); ok {
+			request.QueryParametersAny[fieldName] = mapAny
+		}
 		normalizedValue := request.normalizeParameters(valueOfValue, value, true)
 		if normalizedValue != nil {
 			request.QueryParametersAny[fieldName] = normalizedValue
@@ -602,6 +657,7 @@ func (request *RequestInformation) AddQueryParameters(source any) {
 // enum -> string (name)
 // []enum -> []string (containing names)
 // []non_interface -> []any (like []int64 -> []any)
+// *numeric -> numeric (like *int64 -> int64)
 func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Value, value any, returnNilIfNotNormalizable bool) any {
 	if valueOfValue.Kind() == reflect.Slice && valueOfValue.Len() > 0 {
 		//type assertions to "enums" don't work if you don't know the enum type in advance, we need to use reflection
@@ -622,6 +678,13 @@ func (request *RequestInformation) normalizeParameters(valueOfValue reflect.Valu
 		}
 	} else if enum, ok := value.(kiotaEnum); ok {
 		return enum.String()
+	} else if valueOfValue.Kind() == reflect.Pointer && !valueOfValue.IsNil() {
+		switch elem := valueOfValue.Elem(); elem.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64:
+			return elem.Interface()
+		}
 	}
 
 	if returnNilIfNotNormalizable {
