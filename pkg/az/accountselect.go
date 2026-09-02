@@ -27,11 +27,40 @@ func homeTenant(a public.Account) string {
 	return ""
 }
 
+// deduplicateAccounts collapses cache entries that share the same home account
+// ID. MSAL may store the same identity under multiple authority keys (e.g. a
+// tenant-specific realm and the literal "organizations"), producing entries
+// that differ only in Realm. Keeping them both causes ResolveAccount to see
+// two equally-good candidates and reject the request as ambiguous.
+//
+// When duplicates exist the entry whose realm is a concrete tenant GUID is
+// preferred over the generic "organizations" value, because the tenant-scoped
+// entry carries more information for downstream matching.
+func deduplicateAccounts(accounts []public.Account) []public.Account {
+	seen := make(map[string]int, len(accounts)) // home_account_id → index in out
+	out := make([]public.Account, 0, len(accounts))
+	for _, a := range accounts {
+		key := strings.ToLower(a.HomeAccountID)
+		if idx, exists := seen[key]; exists {
+			// Prefer the tenant-specific realm over "organizations".
+			if strings.EqualFold(out[idx].Realm, "organizations") && !strings.EqualFold(a.Realm, "organizations") {
+				out[idx] = a
+			}
+			continue
+		}
+		seen[key] = len(out)
+		out = append(out, a)
+	}
+	return out
+}
+
 // ResolveAccount picks exactly one account from a single cache snapshot.
 //
 // The snapshot must be the one taken for this invocation, so that the account
 // returned here is the same account a later token request will find.
 func ResolveAccount(accounts []public.Account, hint, active, tenant string) (public.Account, error) {
+	accounts = deduplicateAccounts(accounts)
+
 	// Step 1: an explicit hint is authoritative. Matching it against a stale or
 	// absent identity is an error rather than a silent fallback, because logging
 	// in as somebody the caller did not ask for is worse than failing.
