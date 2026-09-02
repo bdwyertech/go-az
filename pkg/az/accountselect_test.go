@@ -75,4 +75,44 @@ var _ = Describe("ResolveAccount", func() {
 		Expect(errors.Is(err, ErrAmbiguousAccount)).To(BeTrue())
 		Expect(err.Error()).To(ContainSubstring(a.PreferredUsername))
 	})
+
+	Describe("deduplication", func() {
+		// Same identity logged in through two authority endpoints produces two
+		// cache entries that differ only in Realm.
+		tenantSpecific := public.Account{
+			HomeAccountID:     "oid-1.tenant-a",
+			LocalAccountID:    "oid-1",
+			Environment:       "login.microsoftonline.com",
+			Realm:             "tenant-a",
+			PreferredUsername: "Daniel.Ristic@broadridge.com",
+		}
+		orgRealm := public.Account{
+			HomeAccountID:     "oid-1.tenant-a",
+			LocalAccountID:    "oid-1",
+			Environment:       "login.microsoftonline.com",
+			Realm:             "organizations",
+			PreferredUsername: "Daniel.Ristic@broadridge.com",
+		}
+
+		It("collapses two entries with the same home_account_id into one", func() {
+			dupes := []public.Account{tenantSpecific, orgRealm}
+			got, err := ResolveAccount(dupes, "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(got.PreferredUsername).To(Equal("Daniel.Ristic@broadridge.com"))
+		})
+
+		It("prefers the tenant-specific realm over organizations", func() {
+			// organizations first, tenant-specific second
+			dupes := []public.Account{orgRealm, tenantSpecific}
+			got, err := ResolveAccount(dupes, "", "", "")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(got.Realm).To(Equal("tenant-a"))
+		})
+
+		It("does not collapse entries with different home_account_ids", func() {
+			different := []public.Account{tenantSpecific, b}
+			_, err := ResolveAccount(different, "", "", "")
+			Expect(errors.Is(err, ErrAmbiguousAccount)).To(BeTrue())
+		})
+	})
 })
