@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/microsoftgraph/msgraph-sdk-go v1.101.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/olekukonko/tablewriter v1.1.4
+	github.com/olekukonko/tablewriter v1.1.5
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
 	github.com/sirupsen/logrus v1.10.2
