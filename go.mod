@@ -1,6 +1,6 @@
 module github.com/bdwyertech/go-az
 
-go 1.25.0
+go 1.26.0
 
 // replace github.com/AzureAD/microsoft-authentication-library-for-go => github.com/bdwyertech/microsoft-authentication-library-for-go v0.2.1-0.20220116010247-e0ef7800a7b8
 
@@ -26,7 +26,7 @@ require (
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 	pgregory.net/rapid v1.3.0
 )
 
